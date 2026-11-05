@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>案D コマンドバー型 | docMaker</title>
+<link rel="stylesheet" href="../css/tokens.css">
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/parts.css">
+<link rel="stylesheet" href="../css/sheet.css">
+<link rel="stylesheet" href="../css/layout-d.css">
+</head>
+<body>
+<!-- 案D：脇の領域を持たず、上部の 1 本のバーに「検索・条件・帳票・主操作」を集約する。
+     仮説：領域を減らし視線の動線を横 1 本にすれば、繰り返し作業の熟練者が最短で回せる。 -->
+<div class="app">
+  <header class="topbar topbar--tall">
+    <span class="topbar__title"><i class="fa-solid fa-file-pen"></i>docMaker</span>
+    <div class="searchbox topbar__search"><i class="fa-solid fa-magnifying-glass"></i><input class="input" id="search" type="search" placeholder="ロット番号・品名・顧客など（Esc で消去）" aria-label="検索"></div>
+    <div class="pop"><button class="btn" id="b-filter" aria-expanded="false"><i class="fa-solid fa-filter"></i>条件<span class="badge-inline hidden" id="fcount"></span></button><div class="pop__box hidden" id="p-filter"></div></div>
+    <span class="vsep"></span>
+    <span class="tray__label"><i class="fa-solid fa-file-lines"></i>帳票</span>
+    <div class="tray__forms" id="cards"></div>
+    <span class="topbar__spacer"></span>
+    <button class="btn btn--primary" id="cta"></button>
+    <div class="pop pop--right"><button class="btn btn--icon" id="b-set" title="データ・表示" aria-label="データ・表示" aria-expanded="false"><i class="fa-solid fa-gear"></i></button><div class="pop__box hidden" id="p-set"><div id="p-data"></div><div id="p-view"></div></div></div>
+  </header>
+  <div class="app__body"><main class="main">
+    <div class="chips hidden" id="chips"></div>
+    <div class="grid-wrap" id="grid"></div>
+    <div class="statusbar" id="status"></div>
+  </main></div>
+</div>
+<script src="../js/core.js"></script>
+<script src="../js/sample-data.js"></script>
+<script src="../js/forms.js"></script>
+<script src="../js/query.js"></script>
+<script src="../js/grid.js"></script>
+<script src="../js/filter-panel.js"></script>
+<script src="../js/panels.js"></script>
+<script src="../js/preview.js"></script>
+<script src="../js/rail.js"></script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  DM.grid = new DM.Grid($("grid"), { statusEl: $("status"), formHints: true, onEnter: () => { if (DM.nextAction().key === "preview") DM.openPreview(); } });
+  DM.mountFormChooser($("cards"), { compact: true });
+  DM.mountFilterPanel($("p-filter")); DM.mountDataPanel($("p-data")); DM.mountViewPanel($("p-view"));
+  const pops = [["b-filter", "p-filter"], ["b-set", "p-set"]];
+  const closeAll = () => pops.forEach(([b, p]) => { $(p).classList.add("hidden"); $(b).setAttribute("aria-expanded", "false"); });
+  pops.forEach(([b, p]) => $(b).addEventListener("click", (e) => { e.stopPropagation(); const open = $(p).classList.contains("hidden"); closeAll(); if (open) { $(p).classList.remove("hidden"); $(b).setAttribute("aria-expanded", "true"); } }));
+  document.addEventListener("click", (e) => { if (!e.target.closest(".pop")) closeAll(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeAll(); });
+  DM.mountCta($("cta"), null, {
+    load: () => $("b-set").click(),
+    form: () => { const p = $("cards").querySelector(".pill"); if (p) p.focus(); },
+    preview: () => DM.openPreview(),
+  });
+  DM.bus.on("query", () => { const n = DM.queryState.filters.length; $("fcount").textContent = n; $("fcount").classList.toggle("hidden", !n); });
+  DM.boot({ search: $("search"), chips: $("chips") });
+})();
+</script>
+</body>
+</html>

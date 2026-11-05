@@ -1,0 +1,69 @@
+/* ── 部品の追加スタイル（パネルの中身・手順・プレビュー）──────── */
+.note { font-size: var(--font-size-small); color: var(--color-text-sub); display: flex; gap: var(--space-2); align-items: flex-start; }
+.note i { margin-top: 3px; }
+.inline { display: inline-flex; align-items: center; gap: var(--space-2); white-space: nowrap; }
+
+/* フィルター行 */
+.filter-row { display: flex; flex-direction: column; gap: var(--space-1); padding: var(--space-2); border: 1px solid var(--color-border); border-radius: var(--radius-m); background: var(--color-surface); }
+.quick { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1); }
+.quick .label { width: 100%; }
+.quick .btn { height: 26px; padding: 0 var(--space-2); font-size: var(--font-size-small); }
+.chips { display: flex; flex-wrap: wrap; gap: var(--space-1); padding: var(--space-1) var(--space-3); border-bottom: 1px solid var(--color-border); background: var(--color-bg); }
+
+/* 帳票の選択（コンパクト）。② は青緑 */
+.pill { height: var(--control-height); padding: 0 var(--space-3); display: inline-flex; align-items: center; gap: var(--space-2); border: 1px solid var(--color-border-strong); border-radius: 999px; background: var(--color-bg); cursor: pointer; white-space: nowrap; }
+.pill:hover { border-color: var(--color-step2); background: var(--color-step2-soft); }
+.pill[aria-checked="true"] { border-color: var(--color-step2); background: var(--color-step2); color: var(--color-on-primary); }
+.pill i { color: var(--color-step2); }
+.pill[aria-checked="true"] i { color: inherit; }
+.pill .tag { line-height: 1.4; }
+
+/* 密度の切替 */
+.seg { display: flex; border: 1px solid var(--color-border-strong); border-radius: var(--radius-s); overflow: hidden; }
+.seg__btn { flex: 1; height: var(--control-height); border: 0; background: var(--color-bg); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: var(--space-1); }
+.seg__btn + .seg__btn { border-left: 1px solid var(--color-border-strong); }
+.seg__btn[aria-checked="true"] { background: var(--color-primary); color: var(--color-on-primary); }
+
+/* サンプルの読み込みボタン */
+.sample-btn { height: auto; padding: var(--space-2) var(--space-3); justify-content: flex-start; text-align: left; align-items: flex-start; }
+.sample-btn i { margin-top: 3px; color: var(--color-sample); }
+.sample-btn small { display: block; color: var(--color-text-sub); font-size: var(--font-size-small); }
+.sample-btn span { white-space: normal; }
+
+/* 処理の流れ ①②③（現在位置・完了を示す） */
+.steps { display: flex; align-items: center; gap: var(--space-2); list-style: none; margin: 0; padding: 0; }
+.step { display: flex; align-items: center; gap: var(--space-2); color: var(--color-text-sub); white-space: nowrap; }
+.step__no { width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: var(--color-surface-2); font-size: var(--font-size-small); font-weight: 700; }
+.step.is-current { color: var(--color-text); font-weight: 700; }
+.step.is-current .step__no { background: var(--color-primary); color: var(--color-on-primary); }
+.step[data-step="2"].is-current .step__no { background: var(--color-step2); }
+.step.is-done:not(.is-current) .step__no { background: var(--color-ok-soft); color: var(--color-ok); }
+.step__line { width: 24px; height: 2px; background: var(--color-border-strong); }
+
+/* プレビュー（③） */
+.preview { display: flex; flex-direction: column; min-height: 0; background: var(--color-bg); }
+.preview__head, .preview__foot { flex: none; display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); }
+.preview__head { border-bottom: 1px solid var(--color-border); }
+.preview__foot { border-top: 1px solid var(--color-border); }
+.preview__main { flex: 1; min-height: 0; display: flex; }
+.preview__nav { width: 220px; flex: none; overflow: auto; padding: var(--space-2); border-right: 1px solid var(--color-border); background: var(--color-surface); display: flex; flex-direction: column; gap: var(--space-1); }
+.nav-item { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2); border: 1px solid transparent; border-radius: var(--radius-s); background: none; cursor: pointer; text-align: left; }
+.nav-item > span:nth-child(2) { flex: 1; min-width: 0; }
+.nav-item:hover { background: var(--color-primary-soft); }
+.nav-item.is-bad { border-color: var(--c-amber-100); background: var(--color-warn-soft); }
+.nav-item__no { width: 22px; text-align: center; color: var(--color-text-sub); font-size: var(--font-size-small); }
+.preview__pages { flex: 1; overflow: auto; background: var(--c-gray-200); padding: var(--space-5); display: flex; flex-direction: column; align-items: center; gap: var(--space-5); }
+.preview__page { zoom: .85; }
+
+/* 取扱説明書 */
+.help { flex: 1; min-height: 0; display: flex; }
+.help__nav { width: 200px; flex: none; padding: var(--space-2); border-right: 1px solid var(--color-border); background: var(--color-surface); display: flex; flex-direction: column; gap: var(--space-1); overflow: auto; }
+.help__nav button { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2); border: 0; border-radius: var(--radius-s); background: none; cursor: pointer; text-align: left; }
+.help__nav button:hover { background: var(--color-primary-soft); }
+.help__nav button[aria-current="true"] { background: var(--color-primary-soft); color: var(--color-primary); font-weight: 700; }
+.help__body { flex: 1; overflow: auto; padding: var(--space-4) var(--space-5); line-height: 1.7; }
+.help__body h2 { margin: 0 0 var(--space-3); font-size: 1.2em; color: var(--color-primary); }
+.help-steps { padding-left: var(--space-5); display: flex; flex-direction: column; gap: var(--space-3); }
+.help-table { border-collapse: collapse; width: 100%; }
+.help-table th, .help-table td { border-bottom: 1px solid var(--color-border); padding: var(--space-2); text-align: left; }
+kbd { font-family: var(--font-mono); font-size: .85em; border: 1px solid var(--color-border-strong); border-bottom-width: 2px; border-radius: var(--radius-s); padding: 0 var(--space-1); background: var(--color-surface); }
