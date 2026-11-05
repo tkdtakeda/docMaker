@@ -2,7 +2,7 @@
 
 SQLite（品質データ）のロットを検索・選択し、帳票形式を選んで、必要事項を転記した帳票を印刷するツール。
 
-> 現在は **画面（レイアウト）の工程**。DB への接続・帳票の実際の転記/出力は、これから組み込む。
+> 現在：画面・版管理・**DB の読み込み**まで完了。帳票の実際の転記/出力は、参考ファイルを受け取ってから組み込む（帳票は仮の 3 種）。
 
 ## 開き方
 - **ふだん**：`Start.bat`（= `python run.py`。Flask が必要）→ Edge で `http://127.0.0.1:57830/`。
@@ -18,10 +18,12 @@ SQLite（品質データ）のロットを検索・選択し、帳票形式を�
 ## 構成
 ```
 run.py / Start.bat    起動
-app/                  サーバー（Flask）：version.py（版・更新履歴）/ services/presence.py（利用状況）/ routes/
+app/                  サーバー（Flask）：version.py（版・更新履歴）/ routes/
+app/services/         presence（利用状況）/ sqlite_ro・db_mirror・lot_list（品質データの読み取り。WaveLog と同じ作法）
 app_build.py          指紋と配る物の要約（版の上げ忘れ検知）
 config/settings.json  ポート・利用状況の置き場
-tests/test_version.py 版管理のテスト
+tests/                版管理・ロット一覧のテスト
+tools/make_sample_db.py  動作確認用の SQLite を作る（python tools/make_sample_db.py 出力先 [行数]）
 web/index.html        採用レイアウト（案C）
 web/css/              tokens（値はここだけ）/ base / parts / sheet（帳票・印刷）/ layout-c
 web/js/core.js            名前空間・EventBus・状態・主操作の判定
@@ -32,6 +34,7 @@ web/js/grid.js            表（列幅の自動調整・見出し固定・複数
 web/js/filter-panel.js    検索ボックス・条件パネル・適用中の札
 web/js/panels.js          データ／表示／帳票選択／主操作／手順表示
 web/js/preview.js         ③ 確認画面と印刷
+web/js/data-source.js   DB（サーバー）から 1 ページずつ引く／再読込
 web/js/rail.js            アイコン列・パネル開閉・起動処理
 web/js/help.js            取扱説明書
 web/layouts/          採用しなかった 4 案（評価の記録）
@@ -56,8 +59,13 @@ web/vendor/fontawesome/ アイコン（ローカル同梱）
 ```bash
 python -m unittest discover -s tests      # 版管理（Flask が入った python で）
 node tools/check.js                       # 画面（file:// で開いて確認。主要な作業経路・検索・フィルター・不足の検出・印刷のページ数・サンプルだけ消す・5,000 行・密度）
-PYTHON=python node tools/check_server.js  # サーバー版（版の札・利用状況・古いサーバー）
+PYTHON=python node tools/check_server.js  # サーバー版（版の札・利用状況・古いサーバー・DB の読み込み）
 ```
 
+## DB を使うには
+Start.bat で開き、左の「データ」に SQLite のファイルの場所を入れて Enter。設定は `data/user_settings.json` に保存される（配る物の要約に影響しない）。
+動作確認だけなら `python tools/make_sample_db.py sample.sqlite3` で作ったファイルを指定する。
+間隔・古いとみなす時間・1 ページの件数は `config/settings.json` の `lot_list`。
+
 ## 次にやること
-DB の読み込み（添付の `sqlite_ro.py` `db_mirror.py` `lot_list.py` `lotlist.py` を `app/` に移す）、帳票の転記・出力（参考ファイル待ち）。残件は `docs/layout-evaluation.md`。
+帳票の転記・出力（参考ファイル待ち）。残件は `docs/layout-evaluation.md`。

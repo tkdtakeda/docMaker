@@ -40,13 +40,18 @@
   /* ── 状態（1 か所で管理する §9）── */
   DM.store = {
     columns: [],        // DB と同じ列名（_ で始まる内部項目は含めない）
-    rows: [],           // 各行は {_id, _sample, ...列}
+    rows: [],           // 各行は {_id, _sample, ...列}。remote のときは「いま表示中のページ」の行
     selected: new Set(),
     formId: "",
     source: { kind: "none", label: "データ未読込", at: null },
     _seq: 0,
+    // mode: "local"＝ブラウザの中の行（サンプル）／"remote"＝サーバー（SQLite）をページごとに引く
+    mode: "local", connected: false, loading: false, error: null,
+    total: 0, range: [0, 0], groups: null, dateColumns: [], lotColumn: "", sourceInfo: null,
+    rowCache: new Map(), // remote：選択した行は、ページを移っても帳票に使えるよう覚えておく
 
     setData(columns, rows, source) {
+      this.mode = "local"; this.connected = false; this.error = null; this.groups = null; this.rowCache = new Map();
       this.columns = columns.slice();
       this.rows = rows;
       this.selected.clear();
@@ -55,14 +60,26 @@
       DM.bus.emit("selection");
     },
     nextId() { return ++this._seq; },
-    byId(id) { return this.rows.find((r) => r._id === id); },
-    selectedRows() { return this.rows.filter((r) => this.selected.has(r._id)); },
+    hasData() { return this.mode === "remote" ? this.connected : this.rows.length > 0; },
+    byId(id) {
+      if (this.mode === "remote") return this.rows.find((r) => r._id === id) || this.rowCache.get(id);
+      return this.rows.find((r) => r._id === id);
+    },
+    selectedRows() {
+      if (this.mode === "remote") return Array.from(this.selected).map((id) => this.rowCache.get(id)).filter(Boolean);
+      return this.rows.filter((r) => this.selected.has(r._id));
+    },
     setSelected(ids) {
       this.selected = new Set(ids);
+      if (this.mode === "remote") {          // 選んだ行を覚える（ページを移ると rows が入れ替わるため）
+        const cur = new Map(this.rows.map((r) => [r._id, r])), keep = new Map();
+        this.selected.forEach((id) => { const r = cur.get(id) || this.rowCache.get(id); if (r) keep.set(id, r); });
+        this.rowCache = keep;
+      }
       DM.bus.emit("selection");
     },
     setForm(id) { this.formId = id || ""; DM.bus.emit("form"); DM.bus.emit("selection"); },
-    sampleCount() { return this.rows.filter((r) => r._sample).length; },
+    sampleCount() { return this.mode === "local" ? this.rows.filter((r) => r._sample).length : 0; },
   };
 
   /* ── 主操作（CTA）は 1 つ。状態でラベルだけを変える §1-2 ──
@@ -70,7 +87,8 @@
   DM.nextAction = function () {
     const s = DM.store, n = s.selected.size;
     const form = DM.forms && DM.forms.get(s.formId);
-    if (!s.rows.length) return { step: 1, label: "① データを読み込む", enabled: true, key: "load", hint: "まだデータを読み込んでいません。サンプルまたはDBを読み込みます。" };
+    if (s.mode === "remote" && s.error) return { step: 1, label: "① データを読み込む", enabled: true, key: "load", hint: "品質データを読み込めませんでした。左の「データ」で確かめてください。" };
+    if (!s.hasData()) return { step: 1, label: "① データを読み込む", enabled: true, key: "load", hint: "まだデータを読み込んでいません。サンプルまたはDBを読み込みます。" };
     if (DM.flowOrder === "form-first" && !form) return { step: 2, label: "② 帳票を選ぶ", enabled: false, key: "pickform", reason: "左の一覧から帳票形式を選んでください。" };
     if (!n) return { step: 1, label: "① ロットを選ぶ", enabled: false, key: "pick", reason: "表でロットを選ぶと、次へ進めます。" };
     if (!form) return { step: 2, label: "② 帳票を選ぶ", enabled: true, key: "form", hint: `${n} 件のロットを選択中です。帳票形式を選んでください。` };
@@ -124,6 +142,7 @@
     });
   };
 
+  DM.parseId = (v) => (/^\d+$/.test(String(v)) ? +v : String(v));   // 行の id：サンプルは数、DB は文字
   DM.fmtNum = (n) => Number(n).toLocaleString("ja-JP");
   document.addEventListener("DOMContentLoaded", () => DM.density.init());
 })();

@@ -79,3 +79,7 @@ kbd { font-family: var(--font-mono); font-size: .85em; border: 1px solid var(--c
 
 /* 警告バーが出ている間は、画面をその高さぶんだけ縮める（上部バーと主操作を覆わない） */
 body:has(#stale-bar) .app { height: calc(100dvh - var(--stale-bar-height)); }
+
+/* 読み込み中（古い表示は残したまま薄くする。操作は止めない §1-18） */
+.grid-wrap.is-loading { opacity: .6; transition: opacity var(--motion-base); }
+.state--error strong { color: var(--color-error); }

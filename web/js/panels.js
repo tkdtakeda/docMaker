@@ -4,26 +4,45 @@
   "use strict";
   const DM = window.DM;
 
-  /* ── データ：読み込み元・サンプルの読み込みとクリア（§11）── */
+  /* ── データ：読み込み元（SQLite）・サンプルの読み込みとクリア（§11）── */
   DM.mountDataPanel = function (el) {
     const draw = () => {
-      const n = DM.store.sampleCount();
+      const keepVal = (sel) => { const i = el.querySelector(sel); return i ? i.value : null; };
+      const typed = { src: keepVal("[data-src]"), tbl: keepVal("[data-tbl]") }, active = el.contains(document.activeElement) ? document.activeElement : null;
+      const focusKey = active && active.matches("[data-src]") ? "[data-src]" : active && active.matches("[data-tbl]") ? "[data-tbl]" : "";
+      const n = DM.store.sampleCount(), d = DM.data || { online: false, settings: {} }, st = DM.store, remote = st.mode === "remote";
+      const state = !d.online ? `<div class="note"><i class="fa-solid fa-circle-info"></i><span>サーバー（Start.bat）で開くと、DB を読み込めます。いまはサンプルで画面を確かめられます。</span></div>`
+        : remote && st.error ? `<div class="note" style="color:var(--color-error)"><i class="fa-solid fa-circle-exclamation"></i><span>${DM.esc(st.error.message)}</span></div>`
+        : remote && st.connected ? `<div class="note" style="color:var(--color-ok)"><i class="fa-solid fa-circle-check"></i><span>${DM.esc(st.source.label)}を ${DM.fmtNum(st.total)} 件読み込み中です。</span></div>`
+        : `<div class="note"><i class="fa-solid fa-circle-info"></i><span>ファイルの場所を入れて Enter（または「読み込む」）。共有（\\\\server\\share\\…）も指定できます。</span></div>`;
       el.innerHTML = `
         <div class="group"><div class="group__title"><i class="fa-solid fa-database"></i>読み込み元（SQLite）</div>
-          <div class="field"><label>品質データ DB のファイル</label><input class="input" type="text" disabled placeholder="例：\\\\server\\share\\SIKADEF.sqlite3"></div>
-          <div class="note"><i class="fa-solid fa-circle-info"></i> DB への接続は、レイアウトを決めたあとの「機能組み込み」で有効にします。いまはサンプルで画面を確認できます。</div></div>
+          <div class="field"><label>品質データ DB のファイル</label><input class="input" type="text" data-src data-nav value="${DM.esc(typed.src != null ? typed.src : d.settings.source || "")}" ${d.online ? "" : "disabled"} placeholder="例：\\\\server\\share\\SIKADEF.sqlite3" spellcheck="false"></div>
+          <details ${d.settings.table ? "open" : ""}><summary class="label">詳細（表の名前）</summary><div class="field"><input class="input" type="text" data-tbl data-nav value="${DM.esc(typed.tbl != null ? typed.tbl : d.settings.table || "")}" ${d.online ? "" : "disabled"} placeholder="空なら自動（仕掛 → 品質情報 → …）"></div></details>
+          <div class="row"><button class="btn btn--primary" data-connect ${d.online ? "" : "disabled"} style="min-width:0;flex:1" title="${d.online ? "" : "サーバーで開いたときだけ使えます"}"><i class="fa-solid fa-plug"></i>読み込む</button>
+            <button class="btn" data-refresh-src ${remote && st.connected ? "" : "disabled"} title="${remote && st.connected ? "共有から取り直す" : "先に読み込んでください"}"><i class="fa-solid fa-rotate"></i>再読込</button></div>
+          ${state}</div>
         <div class="group"><div class="group__title"><i class="fa-solid fa-flask"></i>サンプルデータ</div>
           ${DM.samples.list().map((p) => `<button class="btn sample-btn" data-sample="${p.id}"><i class="fa-solid ${p.icon}"></i><span><b>${DM.esc(p.name)}</b><small>${DM.esc(p.desc)}</small></span></button>`).join("")}
           <button class="btn btn--danger" data-clear-sample ${n ? "" : "disabled"}><i class="fa-solid fa-trash-can"></i>サンプルだけを消す${n ? `（${DM.fmtNum(n)} 行）` : ""}</button>
           ${n ? "" : '<div class="note">サンプルは読み込まれていません。</div>'}
-          <div class="note">実データは消しません。消したあとも「元に戻す」で復元できます。</div></div>`;
+          <div class="note"><span>サンプルを読み込むと DB の表示はいったん止まり、サンプルを消すと DB に戻ります。実データは消しません。</span></div></div>`;
+      if (focusKey) { const f = el.querySelector(focusKey); if (f) f.focus(); }
     };
-    el.addEventListener("click", (e) => {
+    const connect = async () => {
+      const src = el.querySelector("[data-src]").value.trim(), tbl = el.querySelector("[data-tbl]").value.trim();
+      if (!src) { DM.toast("ファイルの場所を入れてください", { icon: "fa-circle-exclamation" }); el.querySelector("[data-src]").focus(); return; }
+      try { await DM.data.saveSettings({ source: src, table: tbl }); await DM.data.connect(); } catch (e) { DM.toast("保存できませんでした：" + e.message, { icon: "fa-circle-exclamation" }); }
+    };
+    el.addEventListener("click", async (e) => {
       const b = e.target.closest("button"); if (!b) return;
-      if (b.dataset.sample) { const c = DM.sampleLoad(b.dataset.sample); DM.toast(`サンプル ${DM.fmtNum(c)} 行を読み込みました`, { icon: "fa-flask" }); }
-      else if (b.dataset.clearSample !== undefined) { const r = DM.sampleClear(); DM.toast(`サンプル ${DM.fmtNum(r.removed)} 行を消しました`, { icon: "fa-trash-can", undo: r.undo }); }
+      if (b.dataset.sample) { const wasDb = DM.store.mode === "remote"; const c = DM.sampleLoad(b.dataset.sample); DM.toast(`サンプル ${DM.fmtNum(c)} 行を読み込みました${wasDb ? "（DB の表示は止めています）" : ""}`, { icon: "fa-flask" }); }
+      else if (b.dataset.clearSample !== undefined) { const r = DM.sampleClear(); DM.toast(`サンプル ${DM.fmtNum(r.removed)} 行を消しました`, { icon: "fa-trash-can", undo: r.undo }); if (DM.data) DM.data.reconnectIfConfigured(); }
+      else if (b.dataset.connect !== undefined) connect();
+      else if (b.dataset.refreshSrc !== undefined) DM.data.refresh();
     });
-    DM.bus.on("data", draw); draw();
+    el.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.isComposing && e.keyCode !== 229 && e.target.matches("[data-src]")) { e.stopPropagation(); e.preventDefault(); connect(); } }, true);   // 場所の欄は Enter で読み込む（変換中は除く）
+    ["data", "page", "datasettings"].forEach((n) => DM.bus.on(n, draw)); draw();
   };
 
   /* ── 表示：密度 3 段階（§1-9）── */

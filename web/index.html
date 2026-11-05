@@ -44,6 +44,7 @@
 <script src="js/query.js"></script>
 <script src="js/grid.js"></script>
 <script src="js/filter-panel.js"></script>
+<script src="js/data-source.js"></script>
 <script src="js/panels.js"></script>
 <script src="js/preview.js"></script>
 <script src="js/rail.js"></script>
@@ -69,6 +70,7 @@
   DM.bus.on("selection", tray);
   $("help").addEventListener("click", () => DM.openHelp());
   DM.boot({ search: $("search"), chips: $("chips"), empty: true }); tray();
+  DM.data.init();                                         // サーバーにつながっていて元ファイルが決まっていれば、自動で読み込む
   DM.version.init(document.querySelector(".topbar"));   // サーバーにつながっているときだけ、版の札などが出る
   DM.maybeAutoHelp();
 })();

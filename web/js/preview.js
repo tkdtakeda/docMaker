@@ -41,7 +41,7 @@
       if (e.target.closest("[data-print]")) DM.print(form, rows);
     };
     host.addEventListener("click", host._pvClick);
-    host.querySelector("[data-onlymiss]").addEventListener("change", (e) => pages.querySelectorAll(".preview__page").forEach((p) => p.classList.toggle("hidden", e.target.checked && !badIds.has(+p.dataset.id))));
+    host.querySelector("[data-onlymiss]").addEventListener("change", (e) => pages.querySelectorAll(".preview__page").forEach((p) => p.classList.toggle("hidden", e.target.checked && !badIds.has(DM.parseId(p.dataset.id)))));
     const pb = host.querySelector("[data-print]"); if (pb && opts.focusPrint) pb.focus();
   };
 

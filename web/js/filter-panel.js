@@ -20,7 +20,7 @@
   DM.mountFilterPanel = function (el) {
     const render = () => {
       const cols = DM.store.columns, st = DM.queryState;
-      const dateCols = DM.dateColumns(DM.store.rows, cols);
+      const dateCols = DM.store.mode === "remote" ? DM.store.dateColumns : DM.dateColumns(DM.store.rows, cols);
       const rowsHtml = st.filters.map((f, i) => {
         const o = DM.ops.get(f.op) || DM.ops.get("contains");
         return `<div class="filter-row" data-i="${i}">
@@ -64,6 +64,7 @@
     });
     DM.enableFormNav(el);
     DM.bus.on("data", render);
+    DM.bus.on("page", () => { if (DM.store.mode === "remote" && !el._dc) { el._dc = 1; render(); } });
     DM.bus.on("filters-external", render);
     render();
     return { render };
