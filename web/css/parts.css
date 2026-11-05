@@ -67,3 +67,15 @@
 .help-table { border-collapse: collapse; width: 100%; }
 .help-table th, .help-table td { border-bottom: 1px solid var(--color-border); padding: var(--space-2); text-align: left; }
 kbd { font-family: var(--font-mono); font-size: .85em; border: 1px solid var(--color-border-strong); border-bottom-width: 2px; border-radius: var(--radius-s); padding: 0 var(--space-1); background: var(--color-surface); }
+
+/* 版の札・更新履歴・古いサーバーの警告 */
+.ver-badge { gap: var(--space-1); font-size: var(--font-size-small); color: var(--color-text-sub); }
+.log h3 { margin: 0 0 var(--space-1); font-size: 1em; display: flex; align-items: center; gap: var(--space-2); }
+.log h3 small { color: var(--color-text-sub); font-weight: 400; }
+.log ul { margin: 0 0 var(--space-4); padding-left: var(--space-5); line-height: 1.7; }
+.help-table th.num, .help-table td.num { text-align: right; }
+.stale-bar { height: var(--stale-bar-height); flex: none; display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) var(--space-4); background: var(--color-warn-soft); color: var(--color-warn); border-bottom: 2px solid var(--color-warn); }
+.stale-bar span { flex: 1; }
+
+/* 警告バーが出ている間は、画面をその高さぶんだけ縮める（上部バーと主操作を覆わない） */
+body:has(#stale-bar) .app { height: calc(100dvh - var(--stale-bar-height)); }

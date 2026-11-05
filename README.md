@@ -5,7 +5,9 @@ SQLite（品質データ）のロットを検索・選択し、帳票形式を�
 > 現在は **画面（レイアウト）の工程**。DB への接続・帳票の実際の転記/出力は、これから組み込む。
 
 ## 開き方
-`index.html` を Edge でダブルクリックするだけ（サーバー・ビルド不要）。
+- **ふだん**：`Start.bat`（= `python run.py`。Flask が必要）→ Edge で `http://127.0.0.1:57830/`。
+- **画面だけ確かめる**：`web/index.html` を Edge でダブルクリック（サーバー不要。版の札など、サーバーが要る機能だけ出ない）。
+
 最初の画面で「サンプル（標準）を読み込む」を押すと、すぐに動作を確かめられる。
 
 ## 作業の流れ（主操作は右上の青いボタン 1 つ。状態でラベルだけが変わる）
@@ -15,33 +17,47 @@ SQLite（品質データ）のロットを検索・選択し、帳票形式を�
 
 ## 構成
 ```
-index.html            採用レイアウト（案C）
-css/                  tokens（値はここだけ）/ base / parts / sheet（帳票・印刷）/ layout-c
-js/core.js            名前空間・EventBus・状態・主操作の判定
-js/sample-data.js     サンプル 4 パターン（種固定）。読み込み／サンプルだけ消す
-js/forms.js           帳票の登録簿（仮の 3 種）。項目 → DB の列の対応と必須指定
-js/query.js           検索・フィルター・並べ替え（演算子は登録簿）
-js/grid.js            表（列幅の自動調整・見出し固定・複数選択・キーボード）
-js/filter-panel.js    検索ボックス・条件パネル・適用中の札
-js/panels.js          データ／表示／帳票選択／主操作／手順表示
-js/preview.js         ③ 確認画面と印刷
-js/rail.js            アイコン列・パネル開閉・起動処理
-js/help.js            取扱説明書
-layouts/              採用しなかった 4 案（評価の記録）
+run.py / Start.bat    起動
+app/                  サーバー（Flask）：version.py（版・更新履歴）/ services/presence.py（利用状況）/ routes/
+app_build.py          指紋と配る物の要約（版の上げ忘れ検知）
+config/settings.json  ポート・利用状況の置き場
+tests/test_version.py 版管理のテスト
+web/index.html        採用レイアウト（案C）
+web/css/              tokens（値はここだけ）/ base / parts / sheet（帳票・印刷）/ layout-c
+web/js/core.js            名前空間・EventBus・状態・主操作の判定
+web/js/sample-data.js     サンプル 4 パターン（種固定）。読み込み／サンプルだけ消す
+web/js/forms.js           帳票の登録簿（仮の 3 種）。項目 → DB の列の対応と必須指定
+web/js/query.js           検索・フィルター・並べ替え（演算子は登録簿）
+web/js/grid.js            表（列幅の自動調整・見出し固定・複数選択・キーボード）
+web/js/filter-panel.js    検索ボックス・条件パネル・適用中の札
+web/js/panels.js          データ／表示／帳票選択／主操作／手順表示
+web/js/preview.js         ③ 確認画面と印刷
+web/js/rail.js            アイコン列・パネル開閉・起動処理
+web/js/help.js            取扱説明書
+web/layouts/          採用しなかった 4 案（評価の記録）
 docs/layout-evaluation.md   5 案の評価・採用理由・残件
-tools/check.js        確認スクリプト（node tools/check.js）
-vendor/fontawesome/   アイコン（ローカル同梱）
+tools/                確認スクリプト（check.js＝画面、check_server.js＝サーバー版）
+web/vendor/fontawesome/ アイコン（ローカル同梱）
 ```
 
 ## 帳票を足すには
-`js/forms.js` に `DM.forms.register({...})` を 1 つ足す（項目、対応する DB の列、必須かどうか）。画面側の変更は不要。
+`web/js/forms.js` に `DM.forms.register({...})` を 1 つ足す（項目、対応する DB の列、必須かどうか）。画面側の変更は不要。
+
+## 版を上げて配る手順
+1. プログラムを直す
+2. `app/version.py` の `APP_VERSION` を上げ、`CHANGELOG` の先頭に 1 件足す（直した・足した＝小、画面や使い方が変わる＝中、作り直し＝大）
+3. `python app_build.py --release`（まだ配っていない版を直しただけなら `--amend`）
+4. `python -m unittest discover -s tests`（版を上げずにプログラムを変えていると、ここで失敗して直し方を言う）
+
+「最新版」は、使っている人たちの版のうちいちばん新しいもの。古い版の人には、見出しの版の札の横に「新しい版あり」が出る（止めはしない）。
+利用状況は、`config/settings.json` の `presence.dir` に共有フォルダを入れると、ほかの PC の版も見える（空ならこの PC の中だけ）。
 
 ## 確認
 ```bash
-node tools/check.js
+python -m unittest discover -s tests      # 版管理（Flask が入った python で）
+node tools/check.js                       # 画面（file:// で開いて確認。主要な作業経路・検索・フィルター・不足の検出・印刷のページ数・サンプルだけ消す・5,000 行・密度）
+PYTHON=python node tools/check_server.js  # サーバー版（版の札・利用状況・古いサーバー）
 ```
-主要な作業経路、検索（全角半角・かなカナ）、フィルター、不足の検出、印刷のページ数、サンプルだけ消す、5,000 行の速さ、密度切替を確認する。
 
-## 決めること（機能組み込みの前に）
-**DB の読み込み方式**：Flask バックエンド（添付の `sqlite_ro.py` `db_mirror.py` `lot_list.py` `lotlist.py` をそのまま使える）を選択済み。
-ただし基本設計 §2 の「ダブルクリックで動く・サーバーを使わない」とは両立しない。`docs/layout-evaluation.md` の残件 #5 を参照。
+## 次にやること
+DB の読み込み（添付の `sqlite_ro.py` `db_mirror.py` `lot_list.py` `lotlist.py` を `app/` に移す）、帳票の転記・出力（参考ファイル待ち）。残件は `docs/layout-evaluation.md`。

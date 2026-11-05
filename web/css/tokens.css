@@ -74,6 +74,7 @@
   --topbar-height: 48px;
   --rail-width: 48px;
   --panel-width: 340px;
+  --stale-bar-height: 48px;
 }
 
 /* ── 表示密度 3 段階（§1-9）。文字・行高・余白・部品の高さを一体で切り替える ── */

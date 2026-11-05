@@ -3,7 +3,7 @@
    index.html を実際のブラウザで開き、主要な作業経路と、これまでの機能が壊れていないかを確かめる。 */
 const { chromium } = require("playwright");
 const path = require("path");
-const URL = "file://" + path.resolve(__dirname, "..", "index.html");
+const URL = "file://" + path.resolve(__dirname, "..", "web", "index.html");
 let failed = 0;
 const ok = (cond, msg) => { console.log((cond ? "  OK  " : "  NG  ") + msg); if (!cond) failed++; };
 

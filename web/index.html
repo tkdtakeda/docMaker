@@ -48,6 +48,7 @@
 <script src="js/preview.js"></script>
 <script src="js/rail.js"></script>
 <script src="js/help.js"></script>
+<script src="js/version.js"></script>
 <script>
 (function () {
   const $ = (id) => document.getElementById(id);
@@ -68,6 +69,7 @@
   DM.bus.on("selection", tray);
   $("help").addEventListener("click", () => DM.openHelp());
   DM.boot({ search: $("search"), chips: $("chips"), empty: true }); tray();
+  DM.version.init(document.querySelector(".topbar"));   // サーバーにつながっているときだけ、版の札などが出る
   DM.maybeAutoHelp();
 })();
 </script>
