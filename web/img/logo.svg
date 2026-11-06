@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="docMaker">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3f74b4"/>
+      <stop offset="1" stop-color="#14304f"/>
+    </linearGradient>
+    <linearGradient id="s" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#cfe0f4"/>
+    </linearGradient>
+    <linearGradient id="t" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5fd0d0"/>
+      <stop offset="1" stop-color="#23808a"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="58" fill="url(#g)"/>
+  <g transform="translate(10 0)">
+    <circle cx="104" cy="142" r="44" fill="none" stroke="url(#s)" stroke-width="28"/>
+    <path d="M150 88l28-28v136a14 14 0 0 1-14 14h0a14 14 0 0 1-14-14z" fill="url(#s)"/>
+    <path d="M178 60v28h-28z" fill="url(#t)"/>
+    <circle cx="104" cy="142" r="11" fill="url(#t)"/>
+  </g>
+</svg>
