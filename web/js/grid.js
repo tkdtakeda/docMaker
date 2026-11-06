@@ -13,7 +13,7 @@
   DM.Grid = function (wrap, opts) {
     opts = opts || {};
     const self = this;
-    const st = { page: 1, size: +DM.safeStorage.get("dm.pageSize", 200), view: [], widths: {}, manual: {}, anchor: null, numeric: new Set(), focusId: null };
+    const st = { page: 1, size: +DM.safeStorage.get("dm.pageSize", 200), view: [], widths: {}, anchor: null, numeric: new Set(), focusId: null };
     const canvas = document.createElement("canvas").getContext("2d");
 
     function measure() {
@@ -31,7 +31,7 @@
         st.widths[c] = Math.round(Math.min(Math.max(w, 64), 300));  // 最小・最大で止める
       });
     }
-    const widthOf = (c) => st.manual[c] || st.widths[c] || 100;
+    const widthOf = (c) => DM.view.widths[c] || st.widths[c] || 100;
 
     function hints() {
       if (!opts.formHints) return null;
@@ -56,7 +56,7 @@
 
     function render() {
       compute();
-      const s = DM.store, cols = s.columns, h = hints();
+      const s = DM.store, cols = DM.view.columns(), h = hints();
       const total = s.rows.length, n = st.view.length;
       if (remote() && s.error && !s.rows.length) { wrap.innerHTML = `<div class="state state--error"><i class="fa-solid fa-circle-exclamation"></i><strong>品質データを読み込めませんでした</strong><span>${DM.esc(s.error.message)}</span><div class="row" style="flex:none"><button class="btn" data-retry><i class="fa-solid fa-rotate"></i>もう一度読み込む</button><button class="btn" data-open-data><i class="fa-solid fa-database"></i>「データ」を開く</button></div></div>`; status(); return; }
       if (!s.hasData()) { wrap.innerHTML = opts.emptyHtml || `<div class="state"><i class="fa-regular fa-folder-open"></i><strong>まだデータを読み込んでいません</strong><span>まずはサンプルで動きを確かめられます。DB の読み込みは左の「データ」から行います。</span><button class="btn" data-load-sample><i class="fa-solid fa-flask"></i>サンプル（標準）を読み込む</button></div>`; status(); return; }
@@ -139,14 +139,14 @@
       const tr = e.target.closest("tr[data-id]"); if (tr) pick(pid(tr.dataset.id), e);
     });
     wrap.addEventListener("dblclick", (e) => {
-      const rz = e.target.closest("[data-resize]"); if (rz) { delete st.manual[rz.dataset.resize]; render(); return; }
+      const rz = e.target.closest("[data-resize]"); if (rz) { delete DM.view.widths[rz.dataset.resize]; DM.bus.emit("view"); return; }
       const tr = e.target.closest("tr[data-id]"); if (tr && opts.onEnter) { DM.store.setSelected([pid(tr.dataset.id)]); opts.onEnter(DM.store.byId(pid(tr.dataset.id))); }
     });
     wrap.addEventListener("pointerdown", (e) => {                 // 列幅の手動変更
       const rz = e.target.closest("[data-resize]"); if (!rz) return; e.preventDefault(); e.stopPropagation();
       const c = rz.dataset.resize, x0 = e.clientX, w0 = widthOf(c);
-      const mv = (ev) => { st.manual[c] = Math.max(48, Math.round(w0 + ev.clientX - x0)); const i = DM.store.columns.indexOf(c) + 1; const col = wrap.querySelector(`colgroup col:nth-child(${i + 1})`); if (col) col.style.width = st.manual[c] + "px"; const t = wrap.querySelector("table"); if (t) t.style.width = 40 + DM.store.columns.reduce((a, k) => a + widthOf(k), 0) + "px"; };
-      const up = () => { document.removeEventListener("pointermove", mv); document.removeEventListener("pointerup", up); render(); };
+      const mv = (ev) => { DM.view.widths[c] = Math.max(48, Math.round(w0 + ev.clientX - x0)); const i = DM.view.columns().indexOf(c) + 1; const col = wrap.querySelector(`colgroup col:nth-child(${i + 1})`); if (col) col.style.width = DM.view.widths[c] + "px"; const t = wrap.querySelector("table"); if (t) t.style.width = 40 + DM.view.columns().reduce((a, k) => a + widthOf(k), 0) + "px"; };
+      const up = () => { document.removeEventListener("pointermove", mv); document.removeEventListener("pointerup", up); DM.bus.emit("view"); };   // 幅を変えた → 保存・再描画
       document.addEventListener("pointermove", mv); document.addEventListener("pointerup", up);
     });
     wrap.addEventListener("keydown", (e) => {
@@ -165,7 +165,8 @@
 
     /* 再描画の契機（選択だけが変わったときはスクロールを保つ） */
     const keep = (fn) => () => { const t = wrap.scrollTop, l = wrap.scrollLeft; fn(); wrap.scrollTop = t; wrap.scrollLeft = l; const f = rowEl(st.focusId); if (f && wrap.contains(document.activeElement)) f.focus(); };
-    DM.bus.on("data", () => { st.page = 1; st.manual = {}; measure(); render(); });
+    DM.bus.on("data", () => { st.page = 1; measure(); render(); });
+    DM.bus.on("view", () => keep(render)());               // 列の表示・並び・幅が変わった
     DM.bus.on("query", () => { st.page = 1; if (remote()) { if (DM.store.hasData() || DM.store.error) DM.data.load({ page: 1, size: st.size }); } else keep(render)(); });
     DM.bus.on("page", keep(render));                       // DB：ページ・結果が届いた
     DM.bus.on("loading", () => { wrap.classList.toggle("is-loading", DM.store.loading); status(); });
@@ -173,7 +174,7 @@
     DM.bus.on("selection", keep(render));
     DM.bus.on("form", keep(render));
     DM.bus.on("density", () => { requestAnimationFrame(() => { measure(); render(); }); });
-    self.resetWidths = () => { st.manual = {}; measure(); render(); };
+    self.resetWidths = () => { DM.view.set({ widths: {} }); };
     self.visibleRows = () => st.view;
     self.pageSize = () => st.size;
     self.refresh = () => { measure(); render(); };

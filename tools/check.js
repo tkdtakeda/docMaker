@@ -121,6 +121,84 @@ const ok = (cond, msg) => { console.log((cond ? "  OK  " : "  NG  ") + msg); if 
   }
   ok((await p.evaluate(() => document.documentElement.dataset.density)) === "standard", "密度の切替が動く");
 
+  console.log("[列の表示・並べ替え]");
+  const panel = async (id, open) => { const b = p.locator(`.rail-btn[data-id="${id}"]`); if (((await b.getAttribute("aria-pressed")) === "true") !== open) await b.click(); };
+  await panel("data", true);
+  await p.locator('[data-sample="standard"]').click();
+  await panel("view", true);
+  const heads = async () => p.locator(".grid thead th[data-col]").evaluateAll((ths) => ths.map((t) => t.dataset.col));
+  ok((await heads()).length === 13, "初めは 13 列すべて表示");
+  await p.locator('.collist__row[data-col="単位"] [data-show]').uncheck();
+  ok(!(await heads()).includes("単位"), "チェックを外すと列が隠れる");
+  ok((await p.locator(".pane-part").first().innerText()).includes("隠した列 1"), "隠した列の数が見出しに出る");
+  await p.locator('.collist__row[data-col="顧客"] [data-move="-1"]').click();
+  await p.locator('.collist__row[data-col="顧客"] [data-move="-1"]').click();
+  ok((await heads()).slice(0, 3).join(",") === "ロット番号,顧客,品名", "▲ で列の並びが変わる（ロット番号,顧客,品名）");
+  await p.locator("[data-colq]").fill("ﾛｯﾄ");
+  ok((await p.locator(".collist__row").count()) === 1, "列を、半角カナでも探せる（ﾛｯﾄ → ロット番号）");
+  await p.locator("[data-colq]").fill("");
+  await panel("view", false);
+
+  console.log("[設定の自動保存（開き直すと当てはまる）]");
+  await panel("filter", true);
+  await p.locator("[data-add]").click();
+  await p.locator('.filter-row select[data-k="column"]').selectOption("顧客");
+  await p.locator('.filter-row input[data-k="value"]').fill("東洋");
+  await p.waitForTimeout(400);
+  await panel("filter", false);
+  await p.locator('.grid thead th[data-col="数量"]').click();
+  await p.waitForTimeout(700);                                          // 自動保存（0.4 秒後）
+  await p.reload();
+  await p.locator("[data-load-sample]").click();
+  await p.waitForTimeout(300);
+  ok((await p.locator("#chips").innerText()).includes("東洋"), "開き直して同じ表を読むと、条件が当てはまる");
+  ok(!(await heads()).includes("単位") && (await heads())[1] === "顧客", "隠した列・列の並びも当てはまる");
+  ok((await p.locator(".toast").allInnerTexts()).some((t) => t.includes("前回の設定を当てはめました")), "当てはめたことを通知で知らせる");
+  await p.locator(".toast button").last().click();
+  await p.waitForTimeout(200);
+  ok((await heads()).includes("単位") && (await p.locator("#chips .tag").count()) === 0, "通知の「元に戻す」で初期の表示に戻る");
+
+  console.log("[作業セット]");
+  await panel("work", true);
+  await p.locator("[data-setname]").fill("東洋だけ");
+  await p.locator("[data-setname]").press("Enter");                     // 空の条件で保存されないよう、先に条件を作る前の状態を保存しておく
+  await panel("work", false);
+  await panel("filter", true);
+  await p.locator("[data-add]").click();
+  await p.locator('.filter-row select[data-k="column"]').selectOption("状態");
+  await p.locator('.filter-row input[data-k="value"]').fill("完了");
+  await p.waitForTimeout(400);
+  await panel("filter", false);
+  await panel("work", true);
+  await p.locator("[data-setname]").fill("完了だけ");
+  await p.locator("[data-save]").click();
+  ok((await p.locator(".setlist__row").count()) === 2, "名前を付けて 2 件保存できる");
+  ok((await p.locator("[data-setname]").inputValue()) === "", "保存したら名前の欄が空になる");
+  ok((await p.locator(".setlist__row").first().innerText()).includes("条件 1"), "一覧に中身の要約が出る");
+  await p.locator('.setlist__row:has-text("東洋だけ") [data-apply]').click();
+  await p.waitForTimeout(200);
+  ok((await p.locator("#chips .tag").count()) === 0, "「当てはめる」で、その作業セットの設定に切り替わる");
+  await p.locator('.setlist__row:has-text("完了だけ") [data-apply]').click();
+  await p.waitForTimeout(200);
+  ok((await p.locator("#chips").innerText()).includes("完了"), "別の作業セットに切り替えられる");
+  const [dlSet] = await Promise.all([p.waitForEvent("download"), p.locator("[data-export]").click()]);
+  const exported = await (await dlSet.createReadStream()).toArray().then((a) => Buffer.concat(a).toString("utf8"));
+  ok(JSON.parse(exported).sets.length === 2, "JSON に書き出せる（2 件）");
+  await p.locator('.setlist__row:has-text("完了だけ") summary').click();
+  await p.locator('.setlist__row:has-text("完了だけ") [data-remove]').click();
+  ok((await p.locator(".setlist__row").count()) === 1, "⋮ の中から削除できる");
+  await p.locator("[data-file]").setInputFiles({ name: "sets.json", mimeType: "application/json", buffer: Buffer.from(exported) });
+  await p.waitForTimeout(300);
+  const names = await p.locator(".setlist__main b").allInnerTexts();
+  ok(names.length === 3 && names.includes("東洋だけ (2)"), "読み込むと、同じ名前は「(2)」を付けて足す（上書きしない）: " + names.join("／"));
+  await p.locator("[data-file]").setInputFiles({ name: "x.json", mimeType: "application/json", buffer: Buffer.from('{"a":1}') });
+  await p.waitForTimeout(200);
+  ok((await p.locator(".toast").last().innerText()).includes("作業セットの書き出しファイルではありません"), "違うファイルは理由を出して読み込まない");
+  await p.locator("[data-setname]").fill("");
+  await p.locator("[data-save]").click();
+  ok((await p.locator(".toast").last().innerText()).includes("名前を入れてください"), "名前が空なら保存せず理由を出す");
+  await panel("work", false);
+
   ok(errors.length === 0, "コンソールエラーなし" + (errors.length ? " : " + errors.join(" / ") : ""));
   await browser.close();
   console.log(failed ? `\n${failed} 件 NG` : "\nすべて OK");

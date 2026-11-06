@@ -21,8 +21,8 @@
   /* ---------- {変数} ---------- */
   /** {変数名} → 式の部品。ツールの値（ページ・枚数など）以外は、データの列 [列名] */
   const VARS = {
-    'ページ': 'PAGENO()', '総ページ': 'PAGECOUNT()', '出力日': 'TODAY()', '板数': 'PLATECOUNT()', '板数(ページ)': 'PLATEPAGE()',
-    'b/a': 'PLATEPAGE() & "/" & PLATECOUNT()', '行番号': 'ROWNO()', 'ロット名': 'LOTNAME()', '行板数': 'ROWPLATES()'
+    'ページ': 'PAGENO()', '総ページ': 'PAGECOUNT()', '出力日': 'TODAY()',
+    '行番号': 'ROWNO()', 'ロット名': 'LOTNAME()' // docMaker：ロットごとに使うので、板の枚数（板数・b/a・行板数）は取り込んでいない
   };
   const varExpr = (name) => VARS[name] || `[${name}]`;
   const quote = (s) => `"${String(s).replace(/"/g, '""')}"`;

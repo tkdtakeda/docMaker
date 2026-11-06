@@ -402,8 +402,7 @@
   const G_PAGE = 'ページ・枚数';
   register('PAGENO', { group: G_PAGE, min: 0, example: 'PAGENO()', desc: '今のページ番号（1 枚にまとめる単位ごとに 1 から数える）', fn: (a, ctx) => (ctx.page ? ctx.page.no : 1) });
   register('PAGECOUNT', { group: G_PAGE, min: 0, example: 'PAGECOUNT()', desc: '1 枚にまとめる単位の総ページ数', fn: (a, ctx) => (ctx.page ? ctx.page.count : 1) });
-  register('PLATECOUNT', { group: G_PAGE, min: 0, example: 'PLATECOUNT()', desc: '板の枚数（1 枚にまとめる単位の全体）', fn: (a, ctx) => (ctx.lot ? (ctx.lot.live || ctx.lot.plates).length : 0) });
-  register('PLATEPAGE', { group: G_PAGE, min: 0, example: 'PLATEPAGE()', desc: '板の枚数（このページ）', fn: (a, ctx) => (ctx.page && ctx.page.plates !== undefined ? ctx.page.plates : '') });
+  // docMaker：ロットごとに使うので、板の枚数（板数・b/a・行板数）は取り込んでいない（PLATECOUNT・PLATEPAGE・ROWPLATES）
   register('ROWNO', { group: G_PAGE, min: 0, example: 'ROWNO()', desc: '板の表の中の行番号（表の外は空欄）', fn: (a, ctx) => (ctx.rowIndex >= 0 ? ctx.rowIndex + 1 : '') });
   register('LOTNAME', { group: G_PAGE, min: 0, example: 'LOTNAME()', desc: '1 枚にまとめる単位の名前（注文番号など）', fn: (a, ctx) => (ctx.lot ? ctx.lot.name : '') });
   /* 同じ表の別のセルの値（C3 や C3:C12 と書いた式を、ブロックの帳票が内部でこの形に直す） */
@@ -465,7 +464,6 @@
     fn: ([list, sep, dash]) => rangesText(list, sep, dash)
   });
   // docMaker：RANGESBY（検査番号ごとに分けた連続まとめ）は CDB の特別な機能なので取り込んでいない。RANGES（汎用）は残す
-  register('ROWPLATES', { group: G_PAGE, min: 0, example: 'ROWPLATES()', desc: '板の表の 1 行にまとめた板の枚数（行を列でまとめる帳票。板ごとの行なら 1）', fn: (a, ctx) => (ctx.rowPlates ? ctx.rowPlates.length : ctx.row ? 1 : '') });
   const agg = (name, desc, f) => register(name, {
     group: G_AGG, min: 1, max: Infinity, example: `${name}(ALL([幅]))`, desc,
     fn: (args) => { const ns = numbersOf(args); return f(ns); }

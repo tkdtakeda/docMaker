@@ -83,6 +83,27 @@
     sampleCount() { return this.mode === "local" ? this.rows.filter((r) => r._sample).length : 0; },
   };
 
+  /* ── 表の見せ方（列の表示・並び・手で変えた幅）。列は名前で覚える（毎月差し替える表でも当てはまる §8） ── */
+  DM.view = {
+    hidden: new Set(),   // 隠した列の名前
+    order: [],           // 並べた順（ここに無い列は、DB の順で後ろに足す）
+    widths: {},          // 手で変えた幅（px）
+    /** すべての列を、並べた順で */
+    ordered() {
+      const all = DM.store.columns, known = this.order.filter((c) => all.includes(c));
+      return known.concat(all.filter((c) => !known.includes(c)));
+    },
+    /** 表に出す列（並べた順・隠した列を除く） */
+    columns() { return this.ordered().filter((c) => !this.hidden.has(c)); },
+    set(patch, quiet) {
+      if (patch.hidden) this.hidden = new Set(patch.hidden);
+      if (patch.order) this.order = patch.order.slice();
+      if (patch.widths) this.widths = Object.assign({}, patch.widths);
+      if (!quiet) DM.bus.emit("view");
+    },
+    reset() { this.set({ hidden: [], order: [], widths: {} }); },
+  };
+
   /* ── 主操作（CTA）は 1 つ。状態でラベルだけを変える §1-2 ──
      件数はツールが数えて文言に入れる。押せないときは理由を返す §1-4。 */
   DM.nextAction = function () {

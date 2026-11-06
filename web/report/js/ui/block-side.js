@@ -84,8 +84,8 @@
 
   /* ---------- データの列と変数 ---------- */
   const VAR_HELP = [
-    ['ページ', '今のページ番号'], ['総ページ', '総ページ数（1 枚にまとめる単位ごと）'], ['出力日', '出力した日'], ['板数', '板の枚数（全体）'],
-    ['板数(ページ)', '板の枚数（このページ）'], ['b/a', '板の枚数（このページ／全体）'], ['行番号', '板の表の中の行番号'], ['行板数', '板の表の 1 行にまとめた板の枚数'], ['ロット名', '1 枚にまとめる単位の名前']
+    ['ページ', '今のページ番号'], ['総ページ', '総ページ数（1 枚にまとめる単位ごと）'], ['出力日', '出力した日'],
+    ['行番号', '板の表の中の行番号'], ['ロット名', '1 枚にまとめる単位の名前']
   ];
 
   /**
@@ -247,7 +247,7 @@
       const byOpts = [{ value: '', label: '板ごとに 1 行（標準）' }].concat(byCols.map((c) => ({ value: c.id, label: `${c.label} ごとに 1 行（${c.side === 'plate' ? '板' : '元データ'}の列）` })));
       if (t.repBy && !byCols.some((c) => c.id === t.repBy)) byOpts.push({ value: t.repBy, label: `${t.repBy.slice(2)} ごとに 1 行（今のデータにない列）` });
       const bySel = UI.select(byOpts, t.repBy || '', { 'aria-label': '板の表の行のまとめ方', title: '列を選ぶと、その列の値が同じ板を 1 行にまとめ、値の昇順に並べます' });
-      bySel.addEventListener('change', () => { st.ops.setRepBy(bySel.value); if (bySel.value) UI.toast({ type: 'info', text: '行にまとめた板の番号は、{板番号|まとめ} で「2、4～11」の形に、枚数は {行板数} で出せます', duration: 6000 }); });
+      bySel.addEventListener('change', () => { st.ops.setRepBy(bySel.value); });
       // 見出しのバッジ兼用：押すと、行のまとめ方を切り替えられる（板ごと／検査番号ごとなど）
       const badgeOpts = byOpts.map((o) => ({ value: o.value, label: '↓ ' + o.label.replace('ごとに 1 行', 'ごと').replace('（板の列）', '（板）').replace('（元データの列）', '（元）') }));
       const badgeSel = UI.select(badgeOpts, t.repBy || '', { 'aria-label': '板の表の行のまとめ方（押して切り替え）', title: '板の表の行です。押すと、1 行を「板 1 枚」にするか「検査番号が同じ板のまとまり」にするかを切り替えられます' });
@@ -256,7 +256,7 @@
       const byBox = !t.rep ? null : el('div', { class: 'bk-rules' }, [
         el('div', { class: 'field-label', text: '板の表の行のまとめ方' }),
         el('div', { class: 'row wrap' }, [bySel]),
-        el('span', { class: 'muted', text: '例：検査番号ごとに 1 行 → 板番号は {板番号|まとめ}、枚数は {行板数}。' })
+        el('span', { class: 'muted', text: '列を選ぶと、その列の値が同じ行を 1 行にまとめます（値の昇順）。' })
       ]);
       host.append(...[
         el('div', { class: 'row' }, [el('b', { text: `${t.name} ${st.addr()}` }), el('span', { class: 'badge', text: kind }), inRep ? badgeSel: null]),

@@ -2,7 +2,7 @@
 
 SQLite（品質データ）のロットを検索・選択し、帳票形式を選んで、必要事項を転記した帳票を印刷するツール。
 
-> 現在：画面・版管理・DB の読み込み・**帳票（CDB の帳票部品）**まで完了。
+> 現在：画面・版管理・DB の読み込み・帳票（CDB の帳票部品）・**設定の自動保存と作業セット**まで完了。
 
 ## 開き方
 - **ふだん**：`Start.bat`（= `python run.py`。Flask が必要）→ Edge で `http://127.0.0.1:57830/`。
@@ -39,6 +39,9 @@ web/js/preview.js         ③ 確認画面と印刷
 web/js/data-source.js   DB（サーバー）から 1 ページずつ引く／再読込
 web/js/report-bridge.js 帳票の画面（iframe）との受け渡し・登録済みの帳票の一覧
 web/report.html       帳票の画面（CDB の帳票部品。web/report/README.md に取り込み元と変更点）
+web/js/columns-panel.js  列の表示・並べ替え（表示パネル）
+web/js/prefs.js          設定の自動保存（列の構成ごと）・作業セット・JSON 書き出し/読み込み
+web/js/work-panel.js     作業セットの画面（左の「作業」）
 web/js/rail.js            アイコン列・パネル開閉・起動処理
 web/js/help.js            取扱説明書
 web/layouts/          採用しなかった 4 案（評価の記録）

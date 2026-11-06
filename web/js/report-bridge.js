@@ -38,6 +38,7 @@
         DM.forms.clear();
         this.list.sort((a, b) => (a.sample === b.sample ? String(a.name).localeCompare(String(b.name), "ja") : a.sample ? 1 : -1)).forEach((p) => DM.forms.register(formOf(p)));
         if (DM.store.formId && !DM.forms.get(DM.store.formId)) DM.store.formId = "";
+        if (!DM.store.formId) { const last = DM.safeStorage.get("dm.formId", ""); if (DM.forms.get(last)) DM.store.formId = last; }   // 前回選んだ帳票
       } catch (e) { this.error = e.message; }
       DM.bus.emit("form");
     },

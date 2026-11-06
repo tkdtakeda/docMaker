@@ -33,14 +33,6 @@
     const rows = tableOf(p, '明細');
     ['No.', '工程', '数量', '製造日', '担当者', '検査結果'].forEach((t, c) => put(rows, 0, c, t));
     put(rows, 1, 1, '{工程}'); put(rows, 1, 2, '{数量|桁=0|桁区切り}'); put(rows, 1, 3, '{製造日}'); put(rows, 1, 4, '{担当者|空=－}'); put(rows, 1, 5, '{検査結果|空=未入力}');
-    // 明細の下：行の数
-    const band = BD().addBand(p.blocks, 'bands', undefined, [1]);
-    band.gap = 0;
-    const cnt = BD().newTable(1, 2, { name: '行の数' });
-    cnt.colW = [0.8, 0.2];
-    put(cnt, 0, 0, '明細の行数', { h: 'right', b: 1 });
-    put(cnt, 0, 1, '{板数} 行', { h: 'center' });
-    band.zones[0].block = cnt;
     CDB.blockCompile.apply(p);
     return p;
   }

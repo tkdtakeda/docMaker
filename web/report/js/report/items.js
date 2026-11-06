@@ -109,9 +109,7 @@
     { value: 'page', label: 'ページ（1/2）', get: (rc) => `${rc.page.no}/${rc.page.count}` },
     { value: 'pageNo', label: 'ページ番号', get: (rc) => rc.page.no },
     { value: 'pageCount', label: '総ページ数', get: (rc) => rc.page.count },
-    { value: 'plateCount', label: '板の枚数（ロット）', get: (rc) => (rc.lot.live || rc.lot.plates).length },
-    { value: 'platePage', label: '板の枚数（このページ）b', get: (rc) => (rc.page.plates === undefined ? '' : rc.page.plates) },
-    { value: 'plateBA', label: '板の枚数（このページ／全体）b/a', get: (rc) => `${rc.page.plates === undefined ? '' : rc.page.plates}/${(rc.lot.live || rc.lot.plates).length}` },
+    // docMaker：ロットごとに使うので、板の枚数（板数・b/a・行板数）は取り込んでいない
     { value: 'rowNo', label: '行番号（表の中）', get: (rc) => (rc.rowIndex >= 0 ? rc.rowIndex + 1 : '') },
     { value: 'lot', label: 'ロットの名前', get: (rc) => rc.lot.name }
     // docMaker：CDB の「フォルダ」は無いので外した

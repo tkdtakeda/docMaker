@@ -455,7 +455,7 @@
         return el('label', { title: v === 'design' ? 'どのセルに何を出すかを表示' : `選んだ${unit()}の実際の値を表示` }, [r, icon(ic), label]);
       }));
       const lotSel = el('select', { class: 'select rp-lot', 'aria-label': `プレビューする${unit()}`, title: `プレビューする${unit()}` },
-        st.lots.length ? st.lots.map((l, i) => el('option', { value: i, text: `${l.name}（板 ${l.plates.length} 枚）` })) : [el('option', { value: 0, text: `（${unit()}がありません）` })]);
+        st.lots.length ? st.lots.map((l, i) => el('option', { value: i, text: l.name })) : [el('option', { value: 0, text: `（${unit()}がありません）` })]);
       lotSel.value = String(st.lotIdx);
       lotSel.addEventListener('change', () => { st.lotIdx = Number(lotSel.value); st.pageIdx = 0; renderAll(); });
       const go = (d) => () => { if (!st.lots.length) return; st.lotIdx = (st.lotIdx + d + st.lots.length) % st.lots.length; st.pageIdx = 0; renderAll(); };

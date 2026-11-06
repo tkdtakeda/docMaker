@@ -136,8 +136,8 @@
         const cols = (api.getColumns ? api.getColumns() : []).filter((c) => c.side === 'plate' || c.side === 'master');
         const opts = [{ value: '', label: '板ごとに 1 行' }].concat(cols.map((c) => ({ value: c.id, label: `${c.label} ごとに 1 行` })));
         if (tb.repBy && !cols.some((c) => c.id === tb.repBy)) opts.push({ value: tb.repBy, label: `${tb.repBy.slice(2)} ごとに 1 行（今のデータにない列）` });
-        const sel2 = UI.select(opts, tb.repBy || '', { 'aria-label': '板の表の行のまとめ方', title: '板の表の 1 行を、板 1 枚にするか、列の値（検査番号など）が同じ板のまとまりにするかを決めます。列ごとの行は、値の昇順に並びます。枚数は {行板数}、板番号は 連続まとめ で出せます' });
-        sel2.addEventListener('change', () => { ops.setRepBy(sel2.value); UI.toast({ type: 'ok', text: sel2.value ? `${(cols.find((c) => c.id === sel2.value) || {}).label || '列'} ごとに 1 行にします。枚数は {行板数}、板番号は「連続まとめ」で出せます` : '板ごとに 1 行にします', duration: 6000 }); });
+        const sel2 = UI.select(opts, tb.repBy || '', { 'aria-label': '板の表の行のまとめ方', title: '板の表の 1 行を、板 1 枚にするか、列の値（検査番号など）が同じ板のまとまりにするかを決めます。列ごとの行は、値の昇順に並びます' });
+        sel2.addEventListener('change', () => { ops.setRepBy(sel2.value); UI.toast({ type: 'ok', text: sel2.value ? `${(cols.find((c) => c.id === sel2.value) || {}).label || '列'} ごとに 1 行にします` : '1 行ずつにします', duration: 6000 }); });
         return sel2;
       }
 

@@ -47,6 +47,9 @@
 <script src="js/data-source.js"></script>
 <script src="js/report-bridge.js"></script>
 <script src="js/panels.js"></script>
+<script src="js/columns-panel.js"></script>
+<script src="js/prefs.js"></script>
+<script src="js/work-panel.js"></script>
 <script src="js/preview.js"></script>
 <script src="js/rail.js"></script>
 <script src="js/help.js"></script>
@@ -59,9 +62,10 @@
   DM.mountFormChooser($("cards"), { compact: true });
   DM.mountRail({ rail: $("rail"), panel: $("panel"), items: [
     { id: "filter", icon: "fa-filter", label: "条件", title: "絞り込み条件", mount: DM.mountFilterPanel, badge: () => DM.queryState.filters.length },
+    { id: "work", icon: "fa-bookmark", label: "作業", title: "作業セット・自動保存", mount: DM.mountWorkPanel },
     { id: "report", icon: "fa-file-invoice", label: "帳票", title: "帳票を作る・直す（登録した帳票は全員で使えます）", action: () => DM.reportBridge.online ? DM.reportBridge.openDesign() : DM.toast("帳票の作成は、サーバー（Start.bat）で開いたときに使えます", { icon: "fa-circle-info" }) },
     { id: "data", icon: "fa-database", label: "データ", sepBefore: true, spacer: true, mount: DM.mountDataPanel },
-    { id: "view", icon: "fa-sliders", label: "表示", mount: DM.mountViewPanel }] });
+    { id: "view", icon: "fa-sliders", label: "表示", title: "表示（列・密度・列幅）", mount: (el) => { const a = document.createElement("div"), b = document.createElement("div"); a.className = b.className = "pane-part"; el.append(a, b); DM.mountColumnsPanel(a); DM.mountViewPanel(b); } }] });
   DM.mountCta($("cta"), $("hint"), {
     load: () => document.querySelector('.rail-btn[data-id="data"]').click(),
     form: () => { const p = $("cards").querySelector(".pill"); if (p) p.focus(); },
