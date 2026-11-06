@@ -1,6 +1,6 @@
 /* ── query: 検索・フィルター・並べ替えの処理（画面と分離）─────────
-   演算子は添付の lot_list.py（WaveLog）と同じ種類。register するだけで足せる（§9）。
-   いまはブラウザ内のサンプルを引く。Flask 接続時は同じ条件（state）を API へ渡す差し替えになる。 */
+   演算子はWaveLog の lot_list と同じ種類。register するだけで足せる（§9）。
+   いまはブラウザ内のサンプルを引く。サーバー接続時は同じ条件（state）を API へ渡す差し替えになる。 */
 (function () {
   "use strict";
   const DM = window.DM;

@@ -2,10 +2,11 @@
 
 SQLite（品質データ）のロットを検索・選択し、帳票形式を選んで、必要事項を転記した帳票を印刷するツール。
 
-> 現在：画面・版管理・DB の読み込み・帳票（CDB の帳票部品）・**設定の自動保存と作業セット**まで完了。
+> 現在：画面・版管理・DB の読み込み・帳票（CDB の帳票部品）・設定の自動保存と作業セットまで完了。**サーバーは Rust（axum）**。Python は使わない。
 
 ## 開き方
-- **ふだん**：`Start.bat`（= `python run.py`。Flask が必要）→ Edge で `http://127.0.0.1:57830/`。
+- **ふだん**：`Start.bat` → Edge で `http://127.0.0.1:57830/`。同じフォルダの `docmaker.exe` を開く（無ければ `cargo run --release` でビルドして開く）。
+- **作る**：`cargo build --release` → `target/release/docmaker.exe` を、`web/`・`config/` と同じフォルダに置いて配る（Rust と、SQLite を同梱ビルドするための C コンパイラ（Windows は Visual Studio Build Tools）が要る。使う側の PC には何も要らない）。
 - **画面だけ確かめる**：`web/index.html` を Edge でダブルクリック（サーバー不要。版の札など、サーバーが要る機能だけ出ない）。
 
 最初の画面で「サンプル（標準）を読み込む」を押すと、すぐに動作を確かめられる。
@@ -19,13 +20,22 @@ SQLite（品質データ）のロットを検索・選択し、帳票形式を�
 
 ## 構成
 ```
-run.py / Start.bat    起動
-app/                  サーバー（Flask）：version.py（版・更新履歴）/ routes/
-app/services/         presence（利用状況）/ sqlite_ro・db_mirror・lot_list（品質データの読み取り。WaveLog と同じ作法）
-app_build.py          指紋と配る物の要約（版の上げ忘れ検知）
-config/settings.json  ポート・利用状況の置き場
-tests/                版管理・ロット一覧のテスト
-tools/make_sample_db.py  動作確認用の SQLite を作る（python tools/make_sample_db.py 出力先 [行数]）
+Cargo.toml / Cargo.lock  Rust の定義（依存は axum・rusqlite など。SQLite は同梱）
+Start.bat                起動
+src/main.rs              起動（ポート・ブラウザを開く・終了時の後始末）
+src/server/              HTTP（axum）：state（状態）/ system（画面・版・心拍）/ lotlist / reports / settings / error
+src/version.rs           版・更新履歴・配った版の記録
+src/build_info.rs        指紋と配る物の要約（版の上げ忘れ検知）
+src/config.rs            設定（初期値 → config/settings.json → data/user_settings.json）
+src/presence.rs          利用状況（だれが・どの PC で・どの版を使っているか）
+src/sqlite_ro.rs         SQLite を読み取り専用で開く＋Access 風の関数（CStr / Val / Nz / Norm / ToDate）
+src/db_mirror.rs         共有 DB を手元に写してから読む（世代・台帳・検査・背景の周回）
+src/lot_list/            ロット一覧の問い合わせ：mod（検索・ページ）/ filter（条件・並べ替え）/ group（ロットでまとめる）
+src/report_store.rs      帳票とひな形の保存
+src/fsio.rs              共有フォルダ越しでも壊さない書き方（一時ファイル → 置き換え）
+config/settings.json     ポート・利用状況の置き場
+tests/                   版管理・ロット一覧・帳票のテスト（common/ はサンプル DB と HTTP の道具）
+tools/                   release.rs（版の記録）/ make_sample_db.rs（動作確認用の SQLite）/ check*.js（画面の確認）
 web/index.html        採用レイアウト（案C）
 web/css/              tokens（値はここだけ）/ base / parts / sheet（帳票・印刷）/ layout-c
 web/js/core.js            名前空間・EventBus・状態・主操作の判定
@@ -46,7 +56,6 @@ web/js/rail.js            アイコン列・パネル開閉・起動処理
 web/js/help.js            取扱説明書
 web/layouts/          採用しなかった 4 案（評価の記録）
 docs/layout-evaluation.md   5 案の評価・採用理由・残件
-tools/                確認スクリプト（check.js＝画面、check_server.js＝サーバー版）
 web/vendor/fontawesome/ アイコン（ローカル同梱）
 ```
 
@@ -55,23 +64,23 @@ web/vendor/fontawesome/ アイコン（ローカル同梱）
 
 ## 版を上げて配る手順
 1. プログラムを直す
-2. `app/version.py` の `APP_VERSION` を上げ、`CHANGELOG` の先頭に 1 件足す（直した・足した＝小、画面や使い方が変わる＝中、作り直し＝大）
-3. `python app_build.py --release`（まだ配っていない版を直しただけなら `--amend`）
-4. `python -m unittest discover -s tests`（版を上げずにプログラムを変えていると、ここで失敗して直し方を言う）
+2. `src/version.rs` の `APP_VERSION` を上げ、`CHANGELOG` の先頭に 1 件足す。`Cargo.toml` の `version` も同じに（直した・足した＝小、画面や使い方が変わる＝中、作り直し＝大）
+3. `cargo run --bin release -- --release`（まだ配っていない版を直しただけなら `-- --amend`。要約だけ見るなら引数なし）
+4. `cargo test`（版を上げずにプログラムを変えていると、ここで失敗して直し方を言う）
 
 「最新版」は、使っている人たちの版のうちいちばん新しいもの。古い版の人には、見出しの版の札の横に「新しい版あり」が出る（止めはしない）。
 利用状況は、`config/settings.json` の `presence.dir` に共有フォルダを入れると、ほかの PC の版も見える（空ならこの PC の中だけ）。
 
 ## 確認
 ```bash
-python -m unittest discover -s tests      # 版管理（Flask が入った python で）
+cargo test                                # 版管理・ロット一覧（検索・まとめ・写し）・帳票の保存・利用状況
 node tools/check.js                       # 画面（file:// で開いて確認。主要な作業経路・検索・フィルター・不足の検出・印刷のページ数・サンプルだけ消す・5,000 行・密度）
-PYTHON=python node tools/check_server.js  # サーバー版（版の札・利用状況・古いサーバー・DB の読み込み）
+node tools/check_server.js                # サーバー版（cargo build してから、実ブラウザで）（版の札・利用状況・古いサーバー・DB の読み込み）
 ```
 
 ## DB を使うには
 Start.bat で開き、左の「データ」に SQLite のファイルの場所を入れて Enter。設定は `data/user_settings.json` に保存される（配る物の要約に影響しない）。
-動作確認だけなら `python tools/make_sample_db.py sample.sqlite3` で作ったファイルを指定する。
+動作確認だけなら `cargo run --bin make_sample_db -- sample.sqlite3` で作ったファイルを指定する。
 間隔・古いとみなす時間・1 ページの件数は `config/settings.json` の `lot_list`。
 
 ## 次にやること

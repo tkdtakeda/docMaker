@@ -1,0 +1,53 @@
+[package]
+name = "docmaker"
+version = "0.6.0"
+edition = "2021"
+rust-version = "1.85"
+description = "docMaker: 品質データ（SQLite）のロットを選んで帳票を出すツールのサーバー"
+default-run = "docmaker"
+publish = false
+
+[lib]
+name = "docmaker"
+path = "src/lib.rs"
+
+[[bin]]
+name = "docmaker"
+path = "src/main.rs"
+
+# 版を記録する道具（配る物の要約を version.rs に書く）。配る物の要約には含めない（tools/ は対象外）
+[[bin]]
+name = "release"
+path = "tools/release.rs"
+
+# 動作確認用の品質データ（SQLite）を作る道具
+[[bin]]
+name = "make_sample_db"
+path = "tools/make_sample_db.rs"
+
+[dependencies]
+axum = "0.8"
+chrono = "0.4.45"
+gethostname = "1.1.0"
+hex = "0.4.3"
+percent-encoding = "2.3.2"
+regex = "1.13.1"
+rusqlite = { version = "0.40.2", features = ["bundled", "backup", "functions"] }
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = { version = "1.0.154", features = ["preserve_order", "float_roundtrip"] }
+sha1 = "0.10.7"
+sha2 = "0.10.9"
+tokio = { version = "1.53.3", features = ["rt-multi-thread", "macros", "net", "signal", "time"] }
+tower = { version = "0.5", features = ["util"] }
+tower-http = { version = "0.7.1", features = ["fs", "set-header"] }
+unicode-normalization = "0.1.26"
+webbrowser = "1.1.0"
+
+[dev-dependencies]
+http-body-util = "0.1.5"
+tempfile = "3.27.0"
+
+[profile.release]
+lto = "thin"
+codegen-units = 4
+strip = true

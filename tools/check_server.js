@@ -1,28 +1,28 @@
-/* サーバー版の確認（版・更新履歴・利用状況・古いサーバー）。
-   使い方:  PYTHON=python node tools/check_server.js     （Flask が入った python を PYTHON に）
-   一時フォルダへ本体を写してサーバーを起動し、実際のブラウザで確かめる。 */
+/* サーバー版の確認（版・更新履歴・利用状況・古いサーバー・DB の読み込み・帳票）。
+   使い方:  node tools/check_server.js        （cargo build で本体を作ってから、実際のブラウザで確かめる）
+   一時フォルダへ画面と設定を写し、DOCMAKER_HOME をそこに向けてサーバーを起動する。 */
 const { chromium } = require("playwright");
 const zlibNote = "xlsx のシート数は workbook.xml の <sheet> の数で数える";
 const { spawn, execSync } = require("child_process");
 const fs = require("fs"), os = require("os"), path = require("path");
 const ROOT = path.resolve(__dirname, "..");
-const PY = process.env.PYTHON || "python3";
+const EXE = process.platform === "win32" ? ".exe" : "";
+const BIN = (name) => path.join(ROOT, "target", "debug", name + EXE);
 const PORT = 57841;
 let failed = 0;
 const ok = (c, m) => { console.log((c ? "  OK  " : "  NG  ") + m); if (!c) failed++; };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 (async () => {
+  execSync("cargo build --quiet --bins", { cwd: ROOT, stdio: "inherit" });
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "dm-"));
-  for (const d of ["app", "web", "config"]) fs.cpSync(path.join(ROOT, d), path.join(tmp, d), { recursive: true, filter: (s) => !s.includes("__pycache__") });
-  fs.copyFileSync(path.join(ROOT, "app_build.py"), path.join(tmp, "app_build.py"));
-  fs.copyFileSync(path.join(ROOT, "run.py"), path.join(tmp, "run.py"));
+  for (const d of ["web", "config"]) fs.cpSync(path.join(ROOT, d), path.join(tmp, d), { recursive: true });
   // 別の PC が新しい版を使っている記録（共有の置き場の代わり）
   const shared = path.join(tmp, "shared"); fs.mkdirSync(path.join(shared, "history"), { recursive: true });
   const now = new Date().toISOString().slice(0, 19);
   fs.writeFileSync(path.join(shared, "history", "PC-B@tanaka.json"), JSON.stringify({ key: "PC-B@tanaka", login: "tanaka", pc: "PC-B", version: "9.0.0", lastAt: now, sessions: 3, totalSec: 3600 }));
   fs.writeFileSync(path.join(tmp, "config", "settings.json"), JSON.stringify({ server: { host: "127.0.0.1", port: PORT, open_browser: false }, presence: { dir: shared } }));
-  const srv = spawn(PY, ["run.py", "--no-browser"], { cwd: tmp, stdio: "ignore" });
+  const srv = spawn(BIN("docmaker"), ["--no-browser"], { cwd: tmp, stdio: "ignore", env: { ...process.env, DOCMAKER_HOME: tmp } });
   const browser = await chromium.launch();
   try {
     for (let i = 0; i < 40; i++) { try { if ((await fetch(`http://127.0.0.1:${PORT}/api/health`)).ok) break; } catch (e) {} await sleep(250); }
@@ -67,7 +67,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     // ---------------- DB（SQLite）を読む ----------------
     console.log("[DB の読み込み]");
     const db = path.join(tmp, "q.sqlite3");
-    execSync(`${PY} ${path.join(ROOT, "tools", "make_sample_db.py")} ${db} 1200`, { stdio: "ignore" });
+    execSync(`"${BIN("make_sample_db")}" "${db}" 1200`, { stdio: "ignore" });
     const p2 = await ctx.newPage();
     const errs2 = []; p2.on("pageerror", (e) => errs2.push(e.message));
     await p2.goto(`http://127.0.0.1:${PORT}/`);
@@ -120,8 +120,11 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     ok((await p2.locator("tr.group-head").count()) > 0, "ロットでまとめると見出し行が出る");
     await p2.locator("[data-group]").uncheck();
     await p2.locator("[data-refresh]").click();
-    await p2.waitForSelector(".toast");
-    ok((await p2.locator(".toast").last().innerText()).includes("更新"), "「再読込」の結果が文字で出る");
+    // 前の操作の通知が残っていても取り違えないよう、「更新」を含む通知が出るまで待つ
+    const hasRefreshToast = () => [...document.querySelectorAll(".toast")].some((x) => x.innerText.includes("更新"));
+    await p2.waitForFunction(hasRefreshToast, null, { timeout: 10000 }).catch(() => {});
+    const toastText = (await p2.locator(".toast").allInnerTexts()).join(" / ");
+    ok(toastText.includes("更新"), "「再読込」の結果が文字で出る: " + toastText.replace(/\s+/g, " ").slice(0, 60));
     await p2.screenshot({ path: path.join(tmp, "db-main.png") });
     console.log("[自動で再接続・サンプルとの行き来]");
     await p2.reload();
