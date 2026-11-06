@@ -11,11 +11,11 @@
     const bodies = {};
     panel.innerHTML = `<div class="panel__head"><i data-ico></i><span data-title></span><span class="topbar__spacer"></span><button class="btn btn--icon btn--ghost" data-shut title="閉じる" aria-label="パネルを閉じる"><i class="fa-solid fa-angles-left"></i></button></div><div class="panel__body"></div>`;
     const bodyHost = panel.querySelector(".panel__body");
-    items.forEach((it) => { const d = document.createElement("div"); d.className = "panel__pane"; d.hidden = true; bodyHost.appendChild(d); bodies[it.id] = d; if (it.mount) it.mount(d); });
+    items.filter((it) => !it.action).forEach((it) => { const d = document.createElement("div"); d.className = "panel__pane"; d.hidden = true; bodyHost.appendChild(d); bodies[it.id] = d; if (it.mount) it.mount(d); });
     const draw = () => {
       rail.querySelectorAll(".rail-btn").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.id === openId)));
       panel.classList.toggle("hidden", !openId);
-      items.forEach((it) => { bodies[it.id].hidden = it.id !== openId; });
+      items.forEach((it) => { if (bodies[it.id]) bodies[it.id].hidden = it.id !== openId; });
       const cur = items.find((i) => i.id === openId);
       if (cur) { panel.querySelector("[data-title]").textContent = cur.title || cur.label; panel.querySelector("[data-ico]").className = "fa-solid " + cur.icon; }
       items.forEach((it) => { if (!it.badge) return; const b = rail.querySelector(`[data-id="${it.id}"] .badge`); const n = it.badge(); if (b) { b.textContent = n; b.classList.toggle("hidden", !n); } });
@@ -25,7 +25,7 @@
       const b = document.createElement("button");
       b.className = "rail-btn"; b.dataset.id = it.id; b.title = it.title || it.label;
       b.innerHTML = `<i class="fa-solid ${it.icon}"></i><span>${DM.esc(it.label)}</span>${it.badge ? '<span class="badge hidden"></span>' : ""}`;
-      b.addEventListener("click", () => { openId = openId === it.id ? "" : it.id; draw(); });
+      b.addEventListener("click", () => { if (it.action) { it.action(); return; } openId = openId === it.id ? "" : it.id; draw(); });
       rail.appendChild(b);
     });
     panel.querySelector("[data-shut]").addEventListener("click", () => { openId = ""; draw(); });

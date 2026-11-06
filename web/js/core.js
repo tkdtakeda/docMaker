@@ -20,6 +20,7 @@
       register(item) { items.set(item.id, item); return item; },
       get(id) { return items.get(id); },
       list() { return Array.from(items.values()); },
+      clear() { items.clear(); },
     };
   };
 

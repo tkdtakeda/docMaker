@@ -45,6 +45,7 @@
 <script src="js/grid.js"></script>
 <script src="js/filter-panel.js"></script>
 <script src="js/data-source.js"></script>
+<script src="js/report-bridge.js"></script>
 <script src="js/panels.js"></script>
 <script src="js/preview.js"></script>
 <script src="js/rail.js"></script>
@@ -53,23 +54,25 @@
 <script>
 (function () {
   const $ = (id) => document.getElementById(id);
-  DM.grid = new DM.Grid($("grid"), { statusEl: $("status"), formHints: true, onEnter: () => { if (DM.nextAction().key === "preview") DM.openPreview(); } });
+  DM.grid = new DM.Grid($("grid"), { statusEl: $("status"), formHints: true, onEnter: () => { if (DM.nextAction().key === "preview") DM.openOutput(); } });
   DM.mountSteps($("steps"));
   DM.mountFormChooser($("cards"), { compact: true });
   DM.mountRail({ rail: $("rail"), panel: $("panel"), items: [
     { id: "filter", icon: "fa-filter", label: "条件", title: "絞り込み条件", mount: DM.mountFilterPanel, badge: () => DM.queryState.filters.length },
+    { id: "report", icon: "fa-file-invoice", label: "帳票", title: "帳票を作る・直す（登録した帳票は全員で使えます）", action: () => DM.reportBridge.online ? DM.reportBridge.openDesign() : DM.toast("帳票の作成は、サーバー（Start.bat）で開いたときに使えます", { icon: "fa-circle-info" }) },
     { id: "data", icon: "fa-database", label: "データ", sepBefore: true, spacer: true, mount: DM.mountDataPanel },
     { id: "view", icon: "fa-sliders", label: "表示", mount: DM.mountViewPanel }] });
   DM.mountCta($("cta"), $("hint"), {
     load: () => document.querySelector('.rail-btn[data-id="data"]').click(),
     form: () => { const p = $("cards").querySelector(".pill"); if (p) p.focus(); },
-    preview: () => DM.openPreview(),
+    preview: () => DM.openOutput(),          // サーバーで開いていれば帳票の画面（CDB の帳票部品）、file:// なら仮のプレビュー
   });
   $("unsel").addEventListener("click", () => { const prev = Array.from(DM.store.selected); DM.store.setSelected([]); DM.toast("選択を解除しました", { icon: "fa-square", undo: () => DM.store.setSelected(prev) }); });
   const tray = () => { const n = DM.store.selected.size; $("tray").classList.toggle("hidden", !n); $("n").textContent = DM.fmtNum(n); };
   DM.bus.on("selection", tray);
   $("help").addEventListener("click", () => DM.openHelp());
   DM.boot({ search: $("search"), chips: $("chips"), empty: true }); tray();
+  DM.reports.load();                                      // 登録済みの帳票（サーバーのときだけ）
   DM.data.init();                                         // サーバーにつながっていて元ファイルが決まっていれば、自動で読み込む
   DM.version.init(document.querySelector(".topbar"));   // サーバーにつながっているときだけ、版の札などが出る
   DM.maybeAutoHelp();

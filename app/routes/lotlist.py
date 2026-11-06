@@ -53,3 +53,23 @@ def lotlist_refresh():
         return error("品質データの元ファイルが決まっていません。", 400, source=m.source_info())
     res = m.refresh(force=True)
     return jsonify(result=res, source=m.source_info())
+
+
+@bp.post("/api/lotlist/lots")
+def lotlist_lots():
+    """選んだロットの全行（帳票の 1 枚＝同じロット番号の行のまとまり）。body: {lots: [ロット番号…]}"""
+    m, ll = lot_mirror()
+    path = m.read_path()
+    if not path:
+        return error("品質データの元ファイルが決まっていません。", 400, source=m.source_info())
+    body = request.get_json(silent=True, force=True) or {}
+    lots = body.get("lots")
+    if not isinstance(lots, list) or not all(isinstance(x, (str, int, float)) for x in lots):
+        return error("lots（ロット番号の一覧）が必要です。", 400)
+    try:
+        out = lot_list.rows_of_lots(path, [str(x) for x in lots], preferred_table=ll.get("table", ""))
+    except ValueError as e:
+        return error(str(e), 400)
+    except Exception as e:
+        return error(str(e), 503, source=m.source_info())
+    return jsonify(out)

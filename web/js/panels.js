@@ -10,6 +10,7 @@
       const keepVal = (sel) => { const i = el.querySelector(sel); return i ? i.value : null; };
       const typed = { src: keepVal("[data-src]"), tbl: keepVal("[data-tbl]") }, active = el.contains(document.activeElement) ? document.activeElement : null;
       const focusKey = active && active.matches("[data-src]") ? "[data-src]" : active && active.matches("[data-tbl]") ? "[data-tbl]" : "";
+      const nRep = DM.reports ? DM.reports.list.filter((x) => x.sample).length : 0;
       const n = DM.store.sampleCount(), d = DM.data || { online: false, settings: {} }, st = DM.store, remote = st.mode === "remote";
       const state = !d.online ? `<div class="note"><i class="fa-solid fa-circle-info"></i><span>サーバー（Start.bat）で開くと、DB を読み込めます。いまはサンプルで画面を確かめられます。</span></div>`
         : remote && st.error ? `<div class="note" style="color:var(--color-error)"><i class="fa-solid fa-circle-exclamation"></i><span>${DM.esc(st.error.message)}</span></div>`
@@ -23,9 +24,10 @@
             <button class="btn" data-refresh-src ${remote && st.connected ? "" : "disabled"} title="${remote && st.connected ? "共有から取り直す" : "先に読み込んでください"}"><i class="fa-solid fa-rotate"></i>再読込</button></div>
           ${state}</div>
         <div class="group"><div class="group__title"><i class="fa-solid fa-flask"></i>サンプルデータ</div>
+          ${d.online ? `<button class="btn sample-btn" data-sample-reports><i class="fa-solid fa-file-invoice"></i><span><b>帳票のサンプル（2 種）</b><small>出荷検査成績書（ツールで作成）・製造指示書（Excel のひな形）。帳票の画面が開きます。</small></span></button>` : ""}
           ${DM.samples.list().map((p) => `<button class="btn sample-btn" data-sample="${p.id}"><i class="fa-solid ${p.icon}"></i><span><b>${DM.esc(p.name)}</b><small>${DM.esc(p.desc)}</small></span></button>`).join("")}
-          <button class="btn btn--danger" data-clear-sample ${n ? "" : "disabled"}><i class="fa-solid fa-trash-can"></i>サンプルだけを消す${n ? `（${DM.fmtNum(n)} 行）` : ""}</button>
-          ${n ? "" : '<div class="note">サンプルは読み込まれていません。</div>'}
+          <button class="btn btn--danger" data-clear-sample ${n || nRep ? "" : "disabled"}><i class="fa-solid fa-trash-can"></i>サンプルだけを消す${n || nRep ? `（${[n ? DM.fmtNum(n) + " 行" : "", nRep ? "帳票 " + nRep + " 種" : ""].filter(Boolean).join("・")}）` : ""}</button>
+          ${n || nRep ? "" : '<div class="note">サンプルは読み込まれていません。</div>'}
           <div class="note"><span>サンプルを読み込むと DB の表示はいったん止まり、サンプルを消すと DB に戻ります。実データは消しません。</span></div></div>`;
       if (focusKey) { const f = el.querySelector(focusKey); if (f) f.focus(); }
     };
@@ -37,12 +39,19 @@
     el.addEventListener("click", async (e) => {
       const b = e.target.closest("button"); if (!b) return;
       if (b.dataset.sample) { const wasDb = DM.store.mode === "remote"; const c = DM.sampleLoad(b.dataset.sample); DM.toast(`サンプル ${DM.fmtNum(c)} 行を読み込みました${wasDb ? "（DB の表示は止めています）" : ""}`, { icon: "fa-flask" }); }
-      else if (b.dataset.clearSample !== undefined) { const r = DM.sampleClear(); DM.toast(`サンプル ${DM.fmtNum(r.removed)} 行を消しました`, { icon: "fa-trash-can", undo: r.undo }); if (DM.data) DM.data.reconnectIfConfigured(); }
+      else if (b.dataset.sampleReports !== undefined) DM.reportBridge.openDesign({ samples: true });
+      else if (b.dataset.clearSample !== undefined) {
+        const r = DM.sampleClear(); let rr = null;
+        try { rr = DM.reports ? await DM.reports.clearSamples() : null; } catch (err) { DM.toast("サンプルの帳票を消せませんでした：" + err.message, { icon: "fa-circle-exclamation" }); }
+        const parts = [r.removed ? `サンプル ${DM.fmtNum(r.removed)} 行` : "", rr && rr.count ? `サンプルの帳票 ${rr.count} 種` : ""].filter(Boolean);
+        DM.toast(`${parts.join("・") || "サンプル"}を消しました`, { icon: "fa-trash-can", undo: async () => { r.undo(); if (rr) await rr.undo(); } });
+        if (DM.data) DM.data.reconnectIfConfigured();
+      }
       else if (b.dataset.connect !== undefined) connect();
       else if (b.dataset.refreshSrc !== undefined) DM.data.refresh();
     });
     el.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.isComposing && e.keyCode !== 229 && e.target.matches("[data-src]")) { e.stopPropagation(); e.preventDefault(); connect(); } }, true);   // 場所の欄は Enter で読み込む（変換中は除く）
-    ["data", "page", "datasettings"].forEach((n) => DM.bus.on(n, draw)); draw();
+    ["data", "page", "datasettings", "form"].forEach((n) => DM.bus.on(n, draw)); draw();
   };
 
   /* ── 表示：密度 3 段階（§1-9）── */
@@ -64,6 +73,12 @@
     opts = opts || {};
     const draw = () => {
       const rows = DM.store.selectedRows();
+      if (!DM.forms.list().length) {
+        el.innerHTML = DM.reports && DM.reports.error
+          ? `<span class="tag tag--error"><i class="fa-solid fa-circle-exclamation"></i>帳票の一覧を読めません：${DM.esc(DM.reports.error)}</span>`
+          : `<span class="note"><i class="fa-solid fa-circle-info"></i><span>登録済みの帳票がありません。</span></span><button class="btn" data-make-form><i class="fa-solid fa-file-pen"></i>帳票を作る</button><button class="btn" data-sample-forms><i class="fa-solid fa-flask"></i>サンプルの帳票を入れる</button>`;
+        return;
+      }
       el.innerHTML = DM.forms.list().map((f) => {
         const chk = rows.length ? DM.forms.check(f, rows) : null;
         if (opts.compact) {
@@ -75,7 +90,11 @@
       }).join("");
     };
     el.setAttribute("role", "radiogroup");
-    el.addEventListener("click", (e) => { const b = e.target.closest("[data-form]"); if (!b) return; DM.store.setForm(b.dataset.form); if (opts.onChoose) opts.onChoose(b.dataset.form); });
+    el.addEventListener("click", (e) => {
+      if (e.target.closest("[data-make-form]")) return DM.reportBridge.openDesign();
+      if (e.target.closest("[data-sample-forms]")) return DM.reportBridge.openDesign({ samples: true });
+      const b = e.target.closest("[data-form]"); if (!b) return; DM.store.setForm(b.dataset.form); if (opts.onChoose) opts.onChoose(b.dataset.form);
+    });
     DM.bus.on("selection", draw); DM.bus.on("form", draw); draw();
   };
 

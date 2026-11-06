@@ -1,0 +1,101 @@
+/* ツールで作る帳票の編集（書式のバー・選択・板の表の帯・印刷範囲の線） */
+.rp-sheetbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2); padding: var(--sp-2) var(--sp-3); border-bottom: 1px solid var(--c-border); background: var(--c-surface); }
+.rp-sheetbar[hidden] { display: none; }
+.rp-fmt-group { display: inline-flex; align-items: center; gap: var(--sp-1); position: relative; }
+.rp-fmt-sep { width: 1px; height: 22px; background: var(--c-border); margin: 0 var(--sp-1); }
+.rp-fmt-addr { min-width: 52px; padding: 2px var(--sp-2); border: 1px solid var(--c-border); border-radius: var(--r-sm); background: var(--c-surface-2); font-weight: var(--fw-bold); text-align: center; }
+.rp-fmt.is-on { background: var(--c-primary-50); border-color: var(--c-primary-500); color: var(--c-primary-700); }
+.rp-fmt-text { margin-left: 4px; font-size: var(--fs-sm); }
+.rp-colorbox { display: inline-flex; align-items: center; gap: 2px; cursor: pointer; }
+.rp-color { width: 26px; height: 26px; padding: 0; border: 1px solid var(--c-border); border-radius: var(--r-sm); background: none; cursor: pointer; }
+.rp-numbox { display: inline-flex; align-items: center; gap: 4px; font-size: var(--fs-sm); color: var(--c-text-sub); }
+.rp-num { width: 64px; }
+.rp-bmenu { top: 100%; left: 0; min-width: 190px; }
+.rp-ctx { position: absolute; z-index: 60; }
+
+/* 選択（背景＋外枠。色だけに頼らない） */
+.rp-sheet td.rp-sel-range { background-image: linear-gradient(rgba(58, 115, 173, .16), rgba(58, 115, 173, .16)); }
+.rp-sheet td.rp-sel-range.rp-sel-top { box-shadow: inset 0 2px 0 var(--c-primary-500); }
+.rp-sheet td.rp-sel-range.rp-sel-bottom { box-shadow: inset 0 -2px 0 var(--c-primary-500); }
+.rp-sheet td.rp-sel-range.rp-sel-left { box-shadow: inset 2px 0 0 var(--c-primary-500); }
+.rp-sheet td.rp-sel-range.rp-sel-right { box-shadow: inset -2px 0 0 var(--c-primary-500); }
+.rp-sheet td.rp-sel-range.rp-sel-top.rp-sel-left { box-shadow: inset 2px 2px 0 var(--c-primary-500); }
+.rp-sheet td.rp-sel-range.rp-sel-top.rp-sel-right { box-shadow: inset -2px 2px 0 var(--c-primary-500); }
+.rp-sheet td.rp-sel-range.rp-sel-bottom.rp-sel-left { box-shadow: inset 2px -2px 0 var(--c-primary-500); }
+.rp-sheet td.rp-sel-range.rp-sel-bottom.rp-sel-right { box-shadow: inset -2px -2px 0 var(--c-primary-500); }
+.rp-sheet td.rp-sel-anchor { background-image: none; background-color: #fff; }
+.rp-sheet th.is-sel { background: var(--c-primary-100, #dbe7f4); color: var(--c-primary-700); font-weight: var(--fw-bold); }
+.rp-sheet th[data-c], .rp-sheet th[data-r] { user-select: none; }
+
+/* 板の表の帯（ヘッダー／板の表／フッター。色と文字の両方で示す） */
+.rp-sheet th.rp-band { width: 26px; padding: 0; border: 1px solid var(--c-border); color: #fff; font-weight: var(--fw-bold); vertical-align: middle; }
+.rp-sheet th.rp-band span { display: block; writing-mode: vertical-rl; margin: 0 auto; font-size: 11px; line-height: 1.2; white-space: nowrap; overflow: hidden; max-height: 100%; }
+.rp-sheet th.rp-band.is-h { background: var(--c-primary-600); }
+.rp-sheet th.rp-band.is-b { background: var(--c-accent-600, #1f7f86); }
+.rp-sheet th.rp-band.is-f { background: #7a6a3c; }
+.rp-sheet th.rp-band-corner { background: var(--c-surface-2); }
+
+/* 印刷範囲の線（用紙の大きさ − 余白） */
+.rp-paper { position: relative; width: max-content; }
+.rp-guide { position: absolute; pointer-events: none; border: 0 dashed var(--c-danger, #b3363a); }
+.rp-guide-v { top: 0; bottom: 0; border-left-width: 2px; }
+.rp-guide-h { left: 0; border-top-width: 2px; }
+.rp-sheet th.rp-band { overflow: hidden; }
+.rp-band-in { overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.rp-sheet td.rp-place-text { color: var(--c-primary-700); }
+.rp-fmt { width: auto; min-width: 28px; padding: 0 var(--sp-2); white-space: nowrap; }
+.rp-fmt-group select, .rp-fmt-group .select { width: auto; min-width: 64px; }
+.rp-legend { display: flex; gap: var(--sp-3); margin-top: var(--sp-2); font-size: var(--fs-sm); flex-wrap: wrap; }
+.rp-legend-i { padding: 1px var(--sp-2); border-radius: var(--r-sm); color: #fff; }
+.rp-legend-i.is-h { background: var(--c-primary-600); }
+.rp-legend-i.is-b { background: var(--c-accent-600, #1f7f86); }
+.rp-legend-i.is-f { background: #7a6a3c; }
+
+/* セルを起点に置く：データの列の一覧・選んだセルの設定 */
+.rp-cols { display: flex; flex-direction: column; gap: 2px; max-height: 260px; overflow: auto; }
+.rp-col { display: flex; align-items: center; gap: var(--sp-2); width: 100%; padding: 3px var(--sp-2); border: 1px solid var(--c-border); border-radius: var(--r-sm); background: var(--c-surface); text-align: left; cursor: pointer; }
+.rp-col:hover:not(:disabled) { background: var(--c-primary-50); border-color: var(--c-primary-500); }
+.rp-col:disabled { opacity: .55; cursor: not-allowed; }
+.rp-col-grip { color: var(--c-text-mute); cursor: grab; }
+.rp-cell-field { display: flex; flex-direction: column; gap: 2px; margin: var(--sp-2) 0; font-size: var(--fs-sm); color: var(--c-text-sub); }
+.rp-cell-field .rp-short { width: 130px; }
+.rp-cell-field select { min-width: 11em; }
+.rp-cell-title { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; margin-bottom: var(--sp-2); }
+
+/* 用紙として描く・NG の空行・選択の枠・パネル幅（独立評価 71 点の指摘への対応） */
+.rp-paper > table { position: relative; z-index: 1; }
+.rp-sheet-paper { position: absolute; z-index: 0; background: #fff; border: 1px solid var(--c-border); box-shadow: 0 1px 6px rgba(0, 0, 0, .3); pointer-events: none; }
+.rp-printbox { position: absolute; z-index: 2; border: 1.5px dashed var(--c-primary-500); pointer-events: none; }
+.rp-paper .rp-legend { position: relative; z-index: 3; }
+.rp-sheet td.rp-skip, .rp-sheet td.rp-skip-cell { background-image: repeating-linear-gradient(45deg, #fbe6e6, #fbe6e6 6px, #fff 6px, #fff 12px); }
+.rp-chip.is-skip { background: var(--c-err-100, #fbe6e6); color: var(--c-err-600, #b3363a); }
+.rp-sheet td.rp-sel-anchor { outline: 2px solid var(--c-primary-600); outline-offset: -2px; position: relative; z-index: 2; }
+.rp-panel[data-kind="n"] { flex: 0 0 400px; }
+.rp-cell-field { flex-direction: row; align-items: center; gap: var(--sp-2); }
+.rp-cell-field > span { width: 7.5em; flex: none; }
+.rp-cell-field .input { flex: 1; min-width: 0; }
+.rp-cell-field .rp-short { flex: 1; width: auto; }
+.rp-basic-sum { margin-left: var(--sp-3); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rp-fmt-row { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; width: 100%; }
+.rp-menu-row { display: flex; align-items: center; gap: var(--sp-2); padding: var(--sp-2) var(--sp-3); }
+.rp-num { width: 58px; }
+.rp-sheet th.rp-band { overflow: visible; text-overflow: clip; }
+.rp-band-in { overflow: visible; }
+.rp-sheet th.rp-band span { text-overflow: clip; max-height: none; overflow: visible; }
+
+/* 再評価（78 点）の指摘への対応 */
+.rp-paper { margin: 0 auto; }
+.rp-pagelabel { position: absolute; z-index: 3; font-size: 11px; color: var(--c-primary-600); white-space: nowrap; pointer-events: none; }
+.rp-paper .rp-sheet td.rp-place { box-shadow: inset 0 0 0 1px #b7c1ce; }
+.rp-cell-more { border: 1px solid var(--c-border); border-radius: var(--r-md); background: var(--c-surface); }
+.rp-cell-more > summary { display: flex; align-items: center; gap: var(--sp-2); padding: var(--sp-2) var(--sp-3); cursor: pointer; list-style: none; }
+.rp-cell-more > summary::-webkit-details-marker { display: none; }
+.rp-cell-more > summary .chev { margin-left: auto; transition: transform .15s; }
+.rp-cell-more[open] > summary .chev { transform: rotate(90deg); }
+.rp-cell-sum { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.rp-cell-detail { padding: 0 var(--sp-3) var(--sp-3); }
+.rp-lot { max-width: 210px; }
+
+/* 採用後の改善（82 点の指摘） */
+.rp-numbox .muted { margin: 0 var(--sp-2) 0 2px; }
+.rp-sheet th.rp-band .rp-band-in span { writing-mode: vertical-rl; letter-spacing: .05em; }

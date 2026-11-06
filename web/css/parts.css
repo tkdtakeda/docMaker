@@ -83,3 +83,11 @@ body:has(#stale-bar) .app { height: calc(100dvh - var(--stale-bar-height)); }
 /* 読み込み中（古い表示は残したまま薄くする。操作は止めない §1-18） */
 .grid-wrap.is-loading { opacity: .6; transition: opacity var(--motion-base); }
 .state--error strong { color: var(--color-error); }
+
+/* 帳票の画面（CDB の帳票部品）を、画面いっぱいの iframe で重ねる */
+.report-frame { position: fixed; inset: 0; z-index: 70; background: rgb(23 50 79 / 28%); }
+.report-frame iframe { width: 100%; height: 100%; border: 0; display: block; background: transparent; }
+.report-frame__wait { position: absolute; left: 50%; top: 40%; transform: translateX(-50%); background: var(--color-bg); padding: var(--space-3) var(--space-5); border-radius: var(--radius-m); box-shadow: var(--shadow-m); }
+.tray__forms .note { display: inline-flex; }
+/* 帳票の画面を開いている間は、docMaker の通知を出さない（帳票の画面の通知と重ねない） */
+body:has(.report-frame) > .toasts { display: none; }

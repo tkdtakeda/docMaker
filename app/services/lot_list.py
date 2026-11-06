@@ -281,6 +281,41 @@ def _json_value(v):
     return v
 
 
+MAX_LOTS = 500            # 帳票に一度に出すロットの数の上限
+MAX_LOT_ROWS = 20000      # そのロットの全行の上限（帳票の板の表に入れる行）
+
+
+def rows_of_lots(path, lots, *, table="", preferred_table=""):
+    """選んだロット番号の「全行」（帳票の 1 枚＝同じロット番号の行のまとまり）。
+    ロット番号は大小・前後の空白・全角半角・かなカナを同じとみなす（表の検索と同じ規則）。並びは表の順。"""
+    want = []
+    for v in lots or []:
+        k = norm_text(v).strip()
+        if k and k not in want:
+            want.append(k)
+    if len(want) > MAX_LOTS:
+        raise ValueError(f"一度に出せるロットは {MAX_LOTS} 件までです（選んだのは {len(want)} 件）。")
+    with connect_ro(path) as c:
+        names = tables(c)
+        t = table if table in names else pick_table(names, preferred_table)
+        if not t:
+            raise RuntimeError("品質データにテーブルが1つもありません。")
+        raw_cs = raw_columns(c, t)
+        cs = columns(c, t, raw_cs)
+        lot = lot_column(cs)
+        if not lot:
+            raise RuntimeError("ロット番号の列が見つかりません（帳票を 1 ロットずつにまとめられません）。")
+        rows = []
+        for i in range(0, len(want), 400):           # SQLite の引数の数の上限を超えないよう分ける
+            part = want[i:i + 400]
+            ph = ",".join("?" * len(part))
+            rows += c.execute(f"SELECT * FROM {qi(t)} WHERE TRIM(Norm(CStr({qi(lot)}))) IN ({ph}) LIMIT {MAX_LOT_ROWS + 1}", part).fetchall()
+            if len(rows) > MAX_LOT_ROWS:
+                raise ValueError(f"選んだロットの行が多すぎます（{MAX_LOT_ROWS:,} 行まで）。ロットを分けて出してください。")
+    return {"table": t, "columns": cs, "lotColumn": lot,
+            "rows": [{col: _json_value(v) for col, v in zip(raw_cs, r)} for r in rows]}
+
+
 def query(path, *, table="", preferred_table="", page=1, page_size=PAGE_SIZE_DEFAULT, search="",
           filters="", sorts="", today=None, group=False):
     t0 = time.perf_counter()

@@ -1,0 +1,227 @@
+/* =========================================================
+   css/layout.css : 画面骨格（ヘッダー／レール／サイドパネル／メイン／表）
+   ページ自体はスクロールさせず 100dvh に収める
+   ========================================================= */
+*, *::before, *::after { box-sizing: border-box; }
+/* hidden を付けた要素は、部品の表示指定（.btn の inline-flex など）より優先して隠す（押せるのに反応しない部品を残さない） */
+[hidden] { display: none !important; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  font-family: var(--font);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+  color: var(--c-text);
+  background: var(--c-bg);
+  /* 日本語は言葉（文節）の切れ目で折り返す（Edge・Chrome 119 以降。lang="ja" が必要）。
+     句読点・小さい「っ」などを行頭に出さない。切れ目のない長い英数字だけは、はみ出す前に途中で折る */
+  word-break: auto-phrase;
+  line-break: strict;
+  overflow-wrap: break-word;
+}
+
+.app {
+  display: grid;
+  grid-template-rows: var(--h-header) minmax(0, 1fr);
+  grid-template-columns: var(--w-flow) auto minmax(0, 1fr);
+  grid-template-areas:
+    "header header header"
+    "flow   panel  main";
+  height: 100dvh;
+}
+
+/* ---------- ヘッダー ---------- */
+.app-header {
+  grid-area: header;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-5);
+  padding: 0 var(--sp-5);
+  background: var(--c-primary-700);
+  color: var(--c-surface);
+  box-shadow: var(--shadow-1);
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-bold);
+  white-space: nowrap;
+}
+.header-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+/* ---------- 作業の手順の列は css/flow.css ---------- */
+
+/* ---------- サイドパネル（既定は閉） ---------- */
+.side-panel {
+  grid-area: panel;
+  width: var(--w-panel);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--c-surface);
+  border-right: 1px solid var(--c-border);
+}
+.side-panel[hidden] { display: none; }
+.panel-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  border-bottom: 1px solid var(--c-border);
+  font-weight: var(--fw-bold);
+}
+.panel-head .spacer { flex: 1; }
+.panel-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* ---------- メイン ---------- */
+.main {
+  grid-area: main;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+.summary-bar {
+  display: flex;
+  flex-wrap: wrap; /* 狭い幅では折り返し、右端の表示中の件数・照合ルールを画面の外に出さない */
+  align-items: center;
+  gap: var(--sp-2) var(--sp-3);
+  min-height: var(--h-summary);
+  padding: var(--sp-2) var(--sp-4);
+  background: var(--c-surface);
+  border-bottom: 1px solid var(--c-border);
+  white-space: nowrap;
+}
+.summary-bar[hidden] { display: none; }
+.summary-bar .spacer { flex: 1; }
+.table-host {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- 仮想スクロール表 ---------- */
+.vt {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--c-surface);
+}
+.vt-head {
+  overflow: hidden;
+  flex: none;
+  border-bottom: 1px solid var(--c-border-strong);
+  background: var(--c-surface-2);
+}
+.vt-body {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+.vt-spacer { width: 1px; }
+.vt-rows {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+.vt-row {
+  display: grid;
+  grid-template-columns: var(--vt-cols);
+  height: var(--row-height);
+  align-items: center;
+  border-bottom: 1px solid var(--c-border);
+  background: var(--c-surface);
+}
+.vt-head .vt-row { border-bottom: none; background: var(--c-surface-2); }
+.vt-cell {
+  padding: var(--table-cell-padding-y) var(--table-cell-padding-x);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--font-size-body);
+}
+.vt-head .vt-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  height: 100%;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-bold);
+  color: var(--c-text-sub);
+  cursor: pointer;
+  user-select: none;
+}
+.vt-head .vt-cell:hover { background: var(--c-primary-100); }
+.vt-head .vt-cell.is-plate { color: var(--c-accent-600); }
+.vt-head .vt-cell .fa-sort { color: var(--c-text-mute); }
+
+.vt-row.is-group { background: var(--c-surface); }
+.vt-row.is-group:hover,
+.vt-row.is-flat:hover,
+.vt-row.is-child:hover { background: var(--c-primary-50); }
+.vt-row.is-child { background: var(--c-surface-2); }
+.vt-row.is-child .vt-cell.is-master { color: var(--c-text-mute); }
+/* 未一致・未作業の印は先頭（固定）列に付ける（固定列の背景で隠れないように） */
+.vt-row.is-orphan .vt-lead { box-shadow: inset 3px 0 0 var(--c-warn-600); }
+.vt-row.is-unworked .vt-lead { box-shadow: inset 3px 0 0 var(--c-text-mute); }
+.vt-row.is-new { animation: flash-new var(--t-flash) ease-out; }
+.vt-cell.is-mixed { color: var(--c-text-mute); font-style: italic; }
+.vt-cell.is-num { text-align: right; font-variant-numeric: tabular-nums; }
+.vt-lead {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--c-text-sub);
+  cursor: pointer;
+}
+
+@keyframes flash-new {
+  0%   { background: var(--c-new-bg); }
+  100% { background: transparent; }
+}
+
+/* ---------- 空状態 ---------- */
+.empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-4);
+  color: var(--c-text-sub);
+  text-align: center;
+}
+.empty-state .fa-solid { font-size: 40px; color: var(--c-primary-200); }
+.empty-state .btn .fa-solid { font-size: inherit; color: inherit; }
+.empty-state h2 { margin: 0; font-size: var(--fs-xl); color: var(--c-text); }
+.empty-state p { margin: 0; }
+
+/* ---------- 判定の表示 ---------- */
+.vt-jicon { margin-right: var(--sp-2); font-size: var(--fs-xs); }
+.vt-cell.is-j-ok .vt-jicon { color: var(--c-ok-600); }
+.vt-cell.is-j-ng { background: var(--c-err-100); color: var(--c-err-600); font-weight: var(--fw-bold); }
+.vt-cell.is-j-missing { color: var(--c-text-mute); }
+
+/* ---------- 見出しのドラッグで列を移動 ---------- */
+.vt-head .vt-cell.is-movable { cursor: grab; }
+.vt-head .vt-cell.is-dragging { opacity: 0.4; }
+.vt-head .vt-cell.is-drop-before { box-shadow: inset 3px 0 0 var(--c-accent-600); }
+.vt-head .vt-cell.is-drop-after { box-shadow: inset -3px 0 0 var(--c-accent-600); }

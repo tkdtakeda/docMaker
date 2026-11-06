@@ -12,6 +12,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DEFAULT_SETTINGS = {
     "server": {"host": "127.0.0.1", "port": 57830, "open_browser": True},
     "lot_list": {"source": "", "table": "", "page_size": 200, "interval_sec": 60, "stale_hours": 36},
+    "reports": {"dir": ""},       # 帳票の置き場。空なら data/reports（この PC の中だけ）。共有フォルダを入れると全 PC で同じ帳票を使える
     "presence": {"dir": ""},      # 空なら data/presence_docmaker（この PC の中だけ）。共有フォルダを入れると、ほかの PC の版も見える
 }
 
@@ -60,6 +61,7 @@ def create_app(base=BASE_DIR, settings=None):
 
     base = Path(base)
     app = Flask(__name__, static_folder=str(base / "web"), static_url_path="")
+    app.config["MAX_CONTENT_LENGTH"] = 40 * 1024 * 1024      # ひな形（Excel）の保存のため
     app.config.update(BASE_DIR=base, WEB_DIR=base / "web", SETTINGS=settings or load_settings(base),
                       BUILD=app_build.fingerprint(base))     # 起動したときの指紋（いまのディスクと違えば stale）
     pdir = (app.config["SETTINGS"].get("presence") or {}).get("dir")

@@ -1,0 +1,172 @@
+/* =========================================================
+   css/tokens.css : デザイントークン（色・余白・角丸・文字・高さ・時間）
+   コンポーネント側は必ずここの変数を参照する
+   ========================================================= */
+:root {
+  /* ---- 色：メイン（落ち着いた青） ---- */
+  --c-primary-900: #16304d;
+  --c-primary-700: #1f4e79;
+  --c-primary-600: #2a6096;
+  --c-primary-500: #3a73ad;
+  --c-primary-200: #c9dcef;
+  --c-primary-100: #e4eef8;
+  --c-primary-50:  #f2f7fc;
+
+  /* ---- 色：アクセント（青に隣接する青緑：類似色調和） ---- */
+  --c-accent-600: #1f7f86;
+  --c-accent-100: #dcf0f1;
+
+  /* ---- 色：ベース（白系） ---- */
+  --c-bg:        #f6f8fb;
+  --c-surface:   #ffffff;
+  --c-surface-2: #f0f3f7;
+  --c-border:    #d8dee7;
+  --c-border-strong: #b7c1ce;
+  --c-text:      #1f2a37;
+  --c-text-sub:  #5b6778;
+  --c-text-mute: #8a95a5;
+  --c-overlay:   rgba(22, 48, 77, 0.35);
+
+  /* ---- 色：状態（必ずアイコン＋文字と併用する） ---- */
+  --c-ok-600:   #2e7d4f;
+  --c-ok-100:   #e3f3e9;
+  --c-warn-600: #9a6200;
+  --c-warn-100: #fdf1d8;
+  --c-err-600:  #b3363a;
+  --c-err-100:  #fbe6e6;
+  --c-info-600: var(--c-primary-600);
+  --c-info-100: var(--c-primary-100);
+  --c-new-bg:   #fff6c9;
+
+  /* ---- 余白 ---- */
+  --sp-1: 2px;
+  --sp-2: 4px;
+  --sp-3: 8px;
+  --sp-4: 12px;
+  --sp-5: 16px;
+  --sp-6: 24px;
+  --sp-7: 32px;
+
+  /* ---- 角丸 ---- */
+  --r-sm: 4px;
+  --r-md: 6px;
+  --r-lg: 10px;
+  --r-pill: 999px;
+
+  /* ---- 文字 ---- */
+  --font: "Segoe UI", "Yu Gothic UI", "Meiryo", system-ui, sans-serif;
+  --font-mono: "Consolas", "BIZ UDGothic", monospace;
+  --fs-xs: 11px;
+  --fs-sm: 13px;   /* 補助の文字 */
+  --fs-md: 14px;   /* 本文（14px 以上・進め方 P9） */
+  --fs-base: 14px;   /* 新しく作る部分の本文（14px 以上） */
+  --fs-lg: 15px;
+  --fs-key: 16px;    /* 表の中で最も重要な値（梱包・検査番号など） */
+  --fs-xl: 18px;
+  --fw-normal: 400;
+  --fw-bold: 600;
+
+  /* ---- 高さ・幅 ---- */
+  --h-header: 52px;
+  --h-summary: 44px;
+  --h-row: 30px;
+  --h-control: 30px;
+  --w-flow: 240px;   /* 左の作業の手順の列（1366 幅でも表を広く） */
+  --h-step: 52px;    /* 手順の段の高さ（どの状態でも同じ。主要動作を上に寄せる） */
+  --w-panel: 340px;  /* 本文 14px でも切り替えの文字が割れない幅 */
+  --w-col-min: 72px;
+  --w-col-max: 240px;
+  --w-col-pin-max: 200px; /* 横スクロールしても残す先頭の列の最大幅（自動の幅のとき。状態「未作業（引当番号あり）」が欠けない幅） */
+  --w-col-lead: 44px;
+  --w-num: 64px;
+  --w-label: 140px;
+  --w-col-type: 90px;
+  --w-col-role: 170px;
+  --w-side-wide: 560px;
+  --w-manual-toc: 280px;  /* 取扱説明書の目次 */
+  --w-calc-list: 220px;   /* 「列を作る」の作った列の一覧 */
+  --w-manual-text: 820px; /* 取扱説明書の本文の行の長さ（読みやすい長さで止める） */
+  --w-modal-xl: 1360px;
+  --w-modal-lg: 1080px;
+  --w-modal-md: 720px;
+  --w-modal-sm: 460px;
+
+  /* ---- 影 ---- */
+  --shadow-1: 0 1px 2px rgba(22, 48, 77, 0.08);
+  --shadow-2: 0 6px 24px rgba(22, 48, 77, 0.18);
+
+  /* ---- 時間 ---- */
+  --t-fast: 120ms;
+  --t-mid: 220ms;
+  --t-flash: 2400ms;
+  --t-toast: 6000ms;
+
+  /* ---- 重なり順 ---- */
+  --z-panel: 20;
+  --z-menu: 40;
+  --z-modal: 60;
+  --z-toast: 80;
+
+  /* ---- 表示密度で切り替える意味トークン（基本設計 1-9。部品はこちらを参照する） ---- */
+  --font-size-body: var(--fs-md);
+  --line-height-body: 1.5;
+  --table-cell-padding-x: var(--sp-3);
+  --table-cell-padding-y: var(--sp-1);
+  --control-height: var(--h-control);
+  --row-height: var(--h-row);
+  --h-badge: 24px;
+  --w-resize: 6px;          /* 列幅を変える見出しのつまみ */
+  --w-col-manual-min: 40px; /* 手で狭められる下限 */
+  --w-col-manual-max: 800px;
+  --w-cursor-bar: 4px;      /* 表の選択中の行の左の帯 */
+  --w-jobs-pop: 420px;      /* 実行中の処理の一覧 */
+  --w-job-chip: 320px;      /* 上部バーの「実行中」の最大幅 */
+  --w-density-menu: 280px;
+  --w-hist-list-min: 280px;
+  --c-on-dark-line: rgba(255, 255, 255, 0.5);   /* 上部バー（濃い青）の上の部品 */
+  --c-on-dark-fill: rgba(255, 255, 255, 0.12);
+  --c-on-dark-hover: rgba(255, 255, 255, 0.22);
+  --t-indeterminate: 1.4s;
+  --t-stall: 10000ms;       /* この間に進捗が更新されなければ「停止の可能性」を出す */
+  --t-recent-job: 8000ms;   /* 終わった処理を上部バーに残す時間 */
+}
+
+/* ---- 表示密度：コンパクト（一覧性を優先） ---- */
+:root[data-density="compact"] {
+  --fs-xs: 10px;
+  --fs-sm: 12px;
+  --fs-md: 13px;
+  --fs-base: 13px;
+  --fs-lg: 14px;
+  --fs-key: 15px;
+  --fs-xl: 16px;
+  --sp-3: 6px;
+  --sp-4: 9px;
+  --sp-5: 12px;
+  --h-row: 24px;
+  --h-control: 26px;
+  --h-badge: 20px;
+  --h-step: 46px;
+  --line-height-body: 1.35;
+}
+
+/* ---- 表示密度：ゆったり（読みやすさ・押しやすさを優先） ---- */
+:root[data-density="comfortable"] {
+  --fs-xs: 12px;
+  --fs-sm: 14px;
+  --fs-md: 16px;
+  --fs-base: 16px;
+  --fs-lg: 17px;
+  --fs-key: 18px;
+  --fs-xl: 20px;
+  --sp-3: 10px;
+  --sp-4: 14px;
+  --sp-5: 18px;
+  --h-row: 38px;
+  --h-control: 36px;
+  --h-badge: 28px;
+  --h-step: 58px;
+  --w-flow: 260px;
+  --w-panel: 380px;
+  --line-height-body: 1.65;
+}
