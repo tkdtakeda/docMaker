@@ -17,7 +17,13 @@ def main():
     for a in sys.argv:
         if a.startswith("--port="):
             port = int(a.split("=", 1)[1])
-    print(f"docMaker を起動しました: {url}（終了は Ctrl+C）")
+    from app.version import APP_VERSION
+    print("=" * 52)
+    print(f"  docMaker  v{APP_VERSION}  帳票作成ツール")
+    print("=" * 52)
+    print(f"  画面: {url}")
+    print("  終了するには、この窓で Ctrl+C を押すか、窓を閉じてください。")
+    print()
     app.run(host=srv["host"], port=port, threaded=True, use_reloader=False)
 
 

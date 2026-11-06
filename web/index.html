@@ -3,19 +3,35 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>docMaker</title>
+<title>docMaker｜帳票作成ツール</title>
+<meta name="theme-color" content="#2f62a3">
+<meta name="description" content="品質データのロットを選び、帳票に転記して印刷・Excel 出力する業務ツール">
+<link rel="icon" type="image/svg+xml" href="img/logo.svg">
+<link rel="apple-touch-icon" href="img/logo-180.png">
 <link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/parts.css">
 <link rel="stylesheet" href="css/sheet.css">
 <link rel="stylesheet" href="css/layout-c.css">
+<link rel="stylesheet" href="css/splash.css">
 </head>
 <body>
 <!-- 採用レイアウト（案C。docs/layout-evaluation.md）。表を最大にし、ロットを選んだときだけ下に「帳票」のトレーが出る。
      ダブルクリックで Edge でそのまま開ける（サーバー不要）。 -->
+<!-- 起動中の画面。JS が読み込まれる前から出し、準備ができたら js/splash.js が消す -->
+<div class="splash" id="splash" role="status" aria-live="polite">
+  <button class="btn btn--ghost splash__skip" data-skip title="起動画面を閉じる"><i class="fa-solid fa-forward"></i>スキップ</button>
+  <img class="splash__logo" src="img/logo.svg" alt="">
+  <h1 class="splash__name">doc<b>Maker</b></h1>
+  <p class="splash__tag">ロットを選んで、帳票をすばやく。</p>
+  <div class="splash__bar"><i></i></div>
+  <p class="splash__msg">起動しています…</p>
+  <p class="splash__foot">帳票作成ツール</p>
+</div>
+<script src="js/splash.js"></script>
 <div class="app">
   <header class="topbar">
-    <span class="topbar__title"><i class="fa-solid fa-file-pen"></i>docMaker</span>
+    <button class="brand" id="brand" title="docMaker について" aria-label="docMaker について"><img src="img/logo.svg" alt=""><span>doc<b>Maker</b></span></button>
     <div class="searchbox topbar__search"><i class="fa-solid fa-magnifying-glass"></i><input class="input" id="search" type="search" placeholder="ロット番号・品名・顧客など、どの項目でも検索" aria-label="検索"></div>
     <ol class="steps" id="steps"></ol>
     <span class="topbar__spacer"></span>
@@ -54,10 +70,12 @@
 <script src="js/rail.js"></script>
 <script src="js/help.js"></script>
 <script src="js/version.js"></script>
+<script src="js/about.js"></script>
 <script>
 (function () {
   const $ = (id) => document.getElementById(id);
   DM.grid = new DM.Grid($("grid"), { statusEl: $("status"), formHints: true, onEnter: () => { if (DM.nextAction().key === "preview") DM.openOutput(); } });
+  DM.splash.step(0.3, "画面を整えています…");
   DM.mountSteps($("steps"));
   DM.mountFormChooser($("cards"), { compact: true });
   DM.mountRail({ rail: $("rail"), panel: $("panel"), items: [
@@ -75,11 +93,14 @@
   const tray = () => { const n = DM.store.selected.size; $("tray").classList.toggle("hidden", !n); $("n").textContent = DM.fmtNum(n); };
   DM.bus.on("selection", tray);
   $("help").addEventListener("click", () => DM.openHelp());
+  $("brand").addEventListener("click", () => DM.openAbout());
   DM.boot({ search: $("search"), chips: $("chips"), empty: true }); tray();
-  DM.reports.load();                                      // 登録済みの帳票（サーバーのときだけ）
-  DM.data.init();                                         // サーバーにつながっていて元ファイルが決まっていれば、自動で読み込む
   DM.version.init(document.querySelector(".topbar"));   // サーバーにつながっているときだけ、版の札などが出る
-  DM.maybeAutoHelp();
+  // 登録済みの帳票（サーバーのときだけ）→ 元ファイルが決まっていれば、自動で読み込む。終わったら起動画面を閉じ、初回案内を出す
+  DM.splash.step(0.55, "帳票を読み込んでいます…");
+  DM.reports.load().then(() => { DM.splash.wait("データを読み込んでいます…"); return DM.data.init(); })
+    .catch(() => {})
+    .then(() => DM.splash.done()).then(() => DM.maybeAutoHelp());
 })();
 </script>
 </body>
