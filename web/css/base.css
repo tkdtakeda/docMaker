@@ -96,8 +96,10 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* 表（§1-10 §1-15：見出し固定・選択行は色＋マーク） */
 .grid-wrap { flex: 1; min-height: 0; overflow: auto; position: relative; background: var(--color-bg); }
 table.grid { border-collapse: separate; border-spacing: 0; table-layout: fixed; width: max-content; min-width: 100%; }
-.grid th, .grid td { padding: var(--table-cell-padding-y) var(--table-cell-padding-x); border-bottom: 1px solid var(--color-border); border-right: 1px solid var(--color-gray-100); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }
-.grid thead th { position: sticky; top: 0; z-index: 2; background: var(--color-surface-2); font-weight: 600; cursor: pointer; user-select: none; border-bottom: 2px solid var(--color-border-strong); }
+.grid th, .grid td { padding: var(--table-cell-padding-y) var(--table-cell-padding-x); border-bottom: 1px solid var(--color-border); border-right: 1px solid var(--color-border); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }
+.grid td { color: var(--color-text-strong); font-family: var(--font-family-data); }
+.grid thead th { font-family: var(--font-family-data); color: var(--color-text-strong); }
+.grid thead th { position: sticky; top: 0; z-index: 2; background: var(--color-surface-2); font-weight: 700; cursor: pointer; user-select: none; border-bottom: 2px solid var(--color-border-strong); }
 .grid thead th:hover { background: var(--color-primary-soft); }
 .grid th .sort { color: var(--color-primary); margin-left: 4px; font-size: .85em; }
 .grid td.num, .grid th.num { text-align: right; font-variant-numeric: tabular-nums; }
@@ -111,7 +113,7 @@ table.grid { border-collapse: separate; border-spacing: 0; table-layout: fixed; 
 .grid td.is-missing { background: var(--color-error-soft); color: var(--color-error); }
 .grid td.is-used { background: var(--color-primary-faint); }
 .grid tr.is-selected td.is-used { background: transparent; }
-.grid tr.group-head td { background: var(--color-surface); font-weight: 600; color: var(--color-text-sub); }
+.grid tr.group-head td { background: var(--color-surface); font-weight: 700; color: var(--c-gray-700); }
 .grid input[type="checkbox"], .check { width: 16px; height: 16px; accent-color: var(--color-primary); cursor: pointer; }
 .hl { background: var(--color-warn-soft); border-radius: 2px; }
 

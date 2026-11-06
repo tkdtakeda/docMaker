@@ -33,6 +33,7 @@
   --color-border: var(--c-gray-200);
   --color-border-strong: var(--c-gray-300);
   --color-text: var(--c-gray-900);
+  --color-text-strong: #0f1722;   /* 表のセルなど、読む量が多い本文用（ほぼ黒） */
   --color-text-sub: var(--c-gray-500);
   --color-primary: var(--c-blue-600);
   --color-primary-hover: var(--c-blue-700);
@@ -68,6 +69,7 @@
   --motion-fast: 120ms;
   --motion-base: 220ms;
   --font-family: "Yu Gothic UI", "Meiryo UI", "Segoe UI", system-ui, sans-serif;
+  --font-family-data: "Meiryo UI", "Yu Gothic UI", "Segoe UI", system-ui, sans-serif;   /* 表の本文：游ゴシックは細く見えるので、線の太いメイリオを先に */
   --font-mono: "Consolas", "Yu Gothic UI", monospace;
 
   /* 画面の骨組み */

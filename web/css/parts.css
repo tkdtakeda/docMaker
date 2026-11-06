@@ -120,3 +120,15 @@ body:has(.report-frame) > .toasts { display: none; }
 .menu-d__box .btn { justify-content: flex-start; }
 .dropzone { border: 2px dashed var(--color-border-strong); border-radius: var(--radius-m); padding: var(--space-3); text-align: center; color: var(--color-text-sub); font-size: var(--font-size-small); }
 .dropzone.is-over { border-color: var(--color-primary); background: var(--color-primary-faint); color: var(--color-primary); }
+
+/* ── 選択カード（下のトレー。選んだロットを 1 行の横スクロールで並べる）── */
+.selcards { display: flex; gap: var(--space-2); overflow-x: auto; padding: 2px 2px var(--space-1); scroll-behavior: smooth; }
+.selcard { flex: none; width: 190px; display: flex; align-items: flex-start; gap: var(--space-1); padding: 5px 4px 5px 10px; border: 1px solid var(--c-blue-200); border-left: 4px solid var(--color-primary); border-radius: var(--radius-m); background: var(--color-bg); box-shadow: var(--shadow-s); cursor: pointer; animation: card-in var(--motion-base) ease-out; }
+.selcard:hover { border-color: var(--color-primary); }
+.selcard__main { flex: 1; min-width: 0; line-height: 1.35; }
+.selcard__lot { font-weight: 700; color: var(--color-text-strong); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.selcard__sub { font-size: var(--font-size-small); color: var(--c-gray-700); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.selcard__x { flex: none; width: 24px; height: 24px; border: 0; border-radius: var(--radius-s); background: none; color: var(--color-text-sub); cursor: pointer; }
+.selcard__x:hover { background: var(--color-error-soft); color: var(--color-error); }
+.selcard--more { align-items: center; width: auto; padding: 0 var(--space-3); border-left-width: 1px; border-style: dashed; color: var(--c-gray-700); cursor: default; white-space: nowrap; }
+@keyframes card-in { from { opacity: 0; transform: translateY(6px) scale(.96); } to { opacity: 1; transform: none; } }
