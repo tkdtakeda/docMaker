@@ -46,15 +46,13 @@
       <div class="chips hidden" id="chips"></div>
       <div class="grid-wrap" id="grid"></div>
       <div class="tray hidden" id="tray" aria-label="選択中のロットと帳票">
-       <div class="tray__top">
         <span class="tray__sel"><i class="fa-solid fa-square-check"></i><b id="n">0</b> 件を選択中 <button class="btn btn--ghost" id="unsel" title="選択をすべて解除"><i class="fa-solid fa-xmark"></i>解除</button></span>
         <span class="tray__label"><i class="fa-solid fa-file-lines"></i>帳票</span>
         <div class="tray__forms" id="cards"></div>
-       </div>
-       <div class="selcards" id="selcards" aria-label="選択中のロット"></div>
       </div>
       <div class="statusbar" id="status"></div>
     </main>
+    <aside class="detail hidden" id="detail" aria-label="選んだロットの全項目"></aside>
   </div>
 </div>
 <script src="js/core.js"></script>
@@ -69,7 +67,7 @@
 <script src="js/columns-panel.js"></script>
 <script src="js/prefs.js"></script>
 <script src="js/work-panel.js"></script>
-<script src="js/selection-cards.js"></script>
+<script src="js/detail-card.js"></script>
 <script src="js/preview.js"></script>
 <script src="js/rail.js"></script>
 <script src="js/help.js"></script>
@@ -88,7 +86,7 @@
     { id: "report", icon: "fa-file-invoice", label: "帳票", title: "帳票を作る・直す（登録した帳票は全員で使えます）", action: () => DM.reportBridge.online ? DM.reportBridge.openDesign() : DM.toast("帳票の作成は、サーバー（Start.bat）で開いたときに使えます", { icon: "fa-circle-info" }) },
     { id: "data", icon: "fa-database", label: "データ", sepBefore: true, spacer: true, mount: DM.mountDataPanel },
     { id: "view", icon: "fa-sliders", label: "表示", title: "表示（列・密度・列幅）", mount: (el) => { const a = document.createElement("div"), b = document.createElement("div"); a.className = b.className = "pane-part"; el.append(a, b); DM.mountColumnsPanel(a); DM.mountViewPanel(b); } }] });
-  DM.mountSelectionCards($("selcards"), { grid: $("grid") });
+  DM.mountDetailCard($("detail"));
   DM.mountCta($("cta"), $("hint"), {
     load: () => document.querySelector('.rail-btn[data-id="data"]').click(),
     form: () => { const p = $("cards").querySelector(".pill"); if (p) p.focus(); },
