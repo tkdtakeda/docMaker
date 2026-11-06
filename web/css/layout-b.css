@@ -1,0 +1,11 @@
+/* 案B：右ドック型 */
+.topbar__search { width: 340px; }
+.dock { width: 440px; }
+.dock .panel__head { padding: var(--space-3); }
+.dock .steps { width: 100%; justify-content: space-between; }
+.dock .step__line { flex: 1; width: auto; }
+.dock__forms { display: flex; flex-direction: column; gap: var(--space-2); }
+.dock__forms .form-card { padding: var(--space-2) var(--space-3); }
+.dock__prev { flex: 1; min-height: 0; }
+.dock__sheet { zoom: .42; transform-origin: top left; overflow: hidden; display: flex; justify-content: center; }
+.dock__sheet .state { zoom: 2.4; }

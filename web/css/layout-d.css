@@ -1,0 +1,10 @@
+/* 案D：コマンドバー型 */
+.topbar--tall { height: auto; min-height: var(--topbar-height); flex-wrap: wrap; padding-top: var(--space-2); padding-bottom: var(--space-2); }
+.topbar__search { width: 340px; }
+.vsep { width: 1px; height: 24px; background: var(--color-border-strong); }
+.tray__label { color: var(--color-step2); font-weight: 700; white-space: nowrap; display: flex; align-items: center; gap: var(--space-1); }
+.tray__forms { display: flex; gap: var(--space-2); }
+.pop { position: relative; }
+.pop__box { position: absolute; top: calc(100% + var(--space-1)); left: 0; width: 360px; max-height: 70dvh; overflow: auto; background: var(--color-bg); border: 1px solid var(--color-border-strong); border-radius: var(--radius-m); box-shadow: var(--shadow-m); padding: var(--space-3); display: flex; flex-direction: column; gap: var(--space-4); z-index: 40; }
+.pop--right .pop__box { left: auto; right: 0; }
+.badge-inline { background: var(--color-primary); color: var(--color-on-primary); border-radius: 999px; padding: 0 6px; font-size: var(--font-size-small); }

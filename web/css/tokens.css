@@ -1,0 +1,104 @@
+/* ── トークン（基本設計 §1-7）──────────────────────────
+   生の色・余白・サイズはこのファイルだけに書く。部品は「意味づけ」の側を参照する。 */
+:root {
+  /* 基本の色（落ち着いた青を基調。グレーはわずかに青みを持たせる） */
+  --c-blue-900: #17324f;
+  --c-blue-700: #24508a;
+  --c-blue-600: #2f62a3;
+  --c-blue-500: #4a7fbd;
+  --c-blue-200: #c6d8ee;
+  --c-blue-100: #e3edf8;
+  --c-blue-50:  #f3f7fc;
+  --c-teal-600: #23808a;   /* ② 帳票（青に近い類似色） */
+  --c-teal-100: #ddf0f2;
+  --c-amber-700: #915d0b;  /* 注意・変更（分裂補色側） */
+  --c-amber-100: #fdf0d5;
+  --c-green-700: #2a7a4b;
+  --c-green-100: #dcf2e4;
+  --c-red-700: #b3392f;
+  --c-red-100: #fbe3e0;
+  --c-gray-900: #1e2733;
+  --c-gray-700: #44505f;
+  --c-gray-500: #6f7b8a;
+  --c-gray-300: #c9d1db;
+  --c-gray-200: #dde3ea;
+  --c-gray-100: #eef1f5;
+  --c-gray-50:  #f7f9fb;
+  --c-white: #ffffff;
+
+  /* 意味づけ（部品はこちらを参照する） */
+  --color-bg: var(--c-white);
+  --color-surface: var(--c-gray-50);
+  --color-surface-2: var(--c-gray-100);
+  --color-border: var(--c-gray-200);
+  --color-border-strong: var(--c-gray-300);
+  --color-text: var(--c-gray-900);
+  --color-text-sub: var(--c-gray-500);
+  --color-primary: var(--c-blue-600);
+  --color-primary-hover: var(--c-blue-700);
+  --color-primary-soft: var(--c-blue-100);
+  --color-primary-faint: var(--c-blue-50);
+  --color-on-primary: var(--c-white);
+  --color-step1: var(--c-blue-600);
+  --color-step2: var(--c-teal-600);
+  --color-step2-soft: var(--c-teal-100);
+  --color-warn: var(--c-amber-700);
+  --color-warn-soft: var(--c-amber-100);
+  --color-ok: var(--c-green-700);
+  --color-ok-soft: var(--c-green-100);
+  --color-error: var(--c-red-700);
+  --color-error-soft: var(--c-red-100);
+  --color-focus: var(--c-blue-500);
+  --color-select-row: var(--c-blue-100);
+  --color-hover-row: var(--c-blue-50);
+  --color-sample: var(--c-amber-700);
+
+  /* 余白・角丸・影・動き */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --radius-s: 4px;
+  --radius-m: 8px;
+  --radius-l: 12px;
+  --shadow-s: 0 1px 2px rgb(23 50 79 / 10%);
+  --shadow-m: 0 6px 20px rgb(23 50 79 / 18%);
+  --motion-fast: 120ms;
+  --motion-base: 220ms;
+  --font-family: "Yu Gothic UI", "Meiryo UI", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "Consolas", "Yu Gothic UI", monospace;
+
+  /* 画面の骨組み */
+  --topbar-height: 48px;
+  --rail-width: 48px;
+  --panel-width: 340px;
+  --stale-bar-height: 48px;
+}
+
+/* ── 表示密度 3 段階（§1-9）。文字・行高・余白・部品の高さを一体で切り替える ── */
+:root, :root[data-density="standard"] {
+  --font-size-body: 14px;
+  --font-size-small: 12px;
+  --line-height-body: 1.5;
+  --table-cell-padding-x: 10px;
+  --table-cell-padding-y: 6px;
+  --control-height: 32px;
+}
+:root[data-density="compact"] {
+  --font-size-body: 12.5px;
+  --font-size-small: 11px;
+  --line-height-body: 1.35;
+  --table-cell-padding-x: 8px;
+  --table-cell-padding-y: 3px;
+  --control-height: 28px;
+}
+:root[data-density="comfortable"] {
+  --font-size-body: 16px;
+  --font-size-small: 13px;
+  --line-height-body: 1.6;
+  --table-cell-padding-x: 14px;
+  --table-cell-padding-y: 10px;
+  --control-height: 38px;
+}

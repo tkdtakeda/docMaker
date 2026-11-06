@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>案E 帳票先行型 | docMaker</title>
+<link rel="stylesheet" href="../css/tokens.css">
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/parts.css">
+<link rel="stylesheet" href="../css/sheet.css">
+<link rel="stylesheet" href="../css/layout-e.css">
+</head>
+<body>
+<!-- 案E：先に帳票を選び、表を「その帳票に必要な項目」の視点で見せる（必須の列に★・未入力を赤）。
+     仮説：不足を選ぶ前に見せれば、印刷直前の手戻りがなくなる。作業順は ②→① になる。 -->
+<div class="app">
+  <header class="topbar">
+    <span class="topbar__title"><i class="fa-solid fa-file-pen"></i>docMaker</span>
+    <div class="searchbox topbar__search"><i class="fa-solid fa-magnifying-glass"></i><input class="input" id="search" type="search" placeholder="どの項目でも検索" aria-label="検索"></div>
+    <ol class="steps" id="steps"></ol>
+    <span class="topbar__spacer"></span>
+    <span class="note" id="hint"></span>
+    <button class="btn btn--primary" id="cta"></button>
+  </header>
+  <div class="app__body">
+    <aside class="panel formside">
+      <div class="panel__head"><i class="fa-solid fa-file-lines"></i>① 帳票を選ぶ</div>
+      <div class="panel__body"><div class="formside__cards" id="cards"></div>
+        <div class="group" id="req"></div></div>
+    </aside>
+    <nav class="rail" id="rail" aria-label="機能"></nav>
+    <aside class="panel hidden" id="panel"></aside>
+    <main class="main">
+      <div class="chips hidden" id="chips"></div>
+      <div class="grid-wrap" id="grid"></div>
+      <div class="statusbar" id="status"></div>
+    </main>
+  </div>
+</div>
+<script src="../js/core.js"></script>
+<script>DM.flowOrder = "form-first";</script>
+<script src="../js/sample-data.js"></script>
+<script src="../js/forms.js"></script>
+<script src="../js/query.js"></script>
+<script src="../js/grid.js"></script>
+<script src="../js/filter-panel.js"></script>
+<script src="../js/panels.js"></script>
+<script src="../js/preview.js"></script>
+<script src="../js/rail.js"></script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  DM.grid = new DM.Grid($("grid"), { statusEl: $("status"), formHints: true, onEnter: () => { if (DM.nextAction().key === "preview") DM.openPreview(); } });
+  DM.mountSteps($("steps"));
+  DM.mountFormChooser($("cards"), {});
+  DM.mountRail({ rail: $("rail"), panel: $("panel"), items: [
+    { id: "filter", icon: "fa-filter", label: "条件", title: "絞り込み条件", mount: DM.mountFilterPanel, badge: () => DM.queryState.filters.length },
+    { id: "data", icon: "fa-database", label: "データ", sepBefore: true, spacer: true, mount: DM.mountDataPanel },
+    { id: "view", icon: "fa-sliders", label: "表示", mount: DM.mountViewPanel }] });
+  DM.mountCta($("cta"), $("hint"), {
+    load: () => document.querySelector('.rail-btn[data-id="data"]').click(),
+    pickform: () => {}, pick: () => {}, form: () => {},
+    preview: () => DM.openPreview(),
+  });
+  const req = () => {
+    const f = DM.forms.get(DM.store.formId);
+    $("req").innerHTML = f ? `<div class="group__title"><i class="fa-solid fa-asterisk"></i>この帳票の必須項目</div>${f.fields.filter((x) => x.required).map((x) => `<span class="tag tag--info">${DM.esc(x.label)} ← ${DM.esc(x.cols[0])}</span>`).join(" ")}` : "";
+  };
+  DM.bus.on("form", req);
+  DM.boot({ search: $("search"), chips: $("chips") }); req();
+})();
+</script>
+</body>
+</html>

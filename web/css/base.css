@@ -1,0 +1,153 @@
+/* ── 基本の部品（トークンだけを参照する）──────────────── */
+@import url("../vendor/fontawesome/css/all.min.css");
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+  color: var(--color-text);
+  background: var(--color-bg);
+  overflow: hidden;                 /* ページ自体はスクロールさせない（§1-8） */
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; }  /* フォーカスは消さない（§1-16） */
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.hidden { display: none !important; }
+
+/* 画面の骨組み：100dvh に収める */
+.app { height: 100dvh; display: flex; flex-direction: column; min-width: 1100px; }
+.app__body { flex: 1; min-height: 0; display: flex; }
+.main { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
+
+/* 上部バー */
+.topbar {
+  height: var(--topbar-height); flex: none; display: flex; align-items: center; gap: var(--space-3);
+  padding: 0 var(--space-3); background: var(--color-primary-faint); border-bottom: 1px solid var(--color-border);
+}
+.topbar__title { font-weight: 700; color: var(--c-blue-900); display: flex; align-items: center; gap: var(--space-2); white-space: nowrap; }
+.topbar__title i { color: var(--color-primary); }
+.topbar__spacer { flex: 1; }
+.topbar > * { flex: none; }
+.topbar .note { flex: 0 1 auto; min-width: 0; max-width: 360px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+.topbar .searchbox { flex: 0 1 380px; min-width: 150px; }
+.topbar .steps { flex: none; }
+
+/* ボタン */
+.btn {
+  height: var(--control-height); padding: 0 var(--space-3); display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+  border: 1px solid var(--color-border-strong); border-radius: var(--radius-s); background: var(--color-bg);
+  cursor: pointer; white-space: nowrap; transition: background var(--motion-fast), border-color var(--motion-fast);
+}
+.btn:hover:not(:disabled) { background: var(--color-primary-faint); border-color: var(--color-primary); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn--primary { background: var(--color-primary); border-color: var(--color-primary); color: var(--color-on-primary); font-weight: 700; min-width: 150px; }
+.btn--primary:hover:not(:disabled) { background: var(--color-primary-hover); border-color: var(--color-primary-hover); }
+.btn--ghost { border-color: transparent; background: transparent; }
+.btn--icon { width: var(--control-height); padding: 0; }
+.btn--danger { color: var(--color-error); }
+
+/* 入力 */
+.field { display: flex; flex-direction: column; gap: 2px; }
+.field > label, .label { font-size: var(--font-size-small); color: var(--color-text-sub); }
+.input, .select {
+  height: var(--control-height); padding: 0 var(--space-2); border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-s); background: var(--color-bg); min-width: 0;
+}
+.input:focus, .select:focus { border-color: var(--color-focus); outline: 2px solid var(--c-blue-200); outline-offset: 0; }
+.input.is-applied { animation: applied var(--motion-base) ease-out; }   /* 反映の合図（§7） */
+@keyframes applied { from { background: var(--color-ok-soft); } to { background: var(--color-bg); } }
+.searchbox { position: relative; display: flex; align-items: center; }
+.searchbox i { position: absolute; left: var(--space-2); color: var(--color-text-sub); pointer-events: none; }
+.searchbox .input { width: 100%; padding-left: 28px; }
+
+/* 札・状態（色だけで伝えない：アイコン＋文字＋色 §1-3） */
+.tag { display: inline-flex; align-items: center; gap: 4px; padding: 0 var(--space-2); border-radius: 999px; font-size: var(--font-size-small); line-height: 1.7; white-space: nowrap; background: var(--color-surface-2); color: var(--color-text); }
+.tag--ok { background: var(--color-ok-soft); color: var(--color-ok); }
+.tag--warn { background: var(--color-warn-soft); color: var(--color-warn); }
+.tag--error { background: var(--color-error-soft); color: var(--color-error); }
+.tag--info { background: var(--color-primary-soft); color: var(--c-blue-700); }
+.tag--sample { background: var(--color-warn-soft); color: var(--color-sample); border: 1px dashed var(--color-sample); }
+.tag button { border: 0; background: none; cursor: pointer; padding: 0 2px; color: inherit; }
+
+/* アイコン列（左）：機能ごとの塊を開閉する（§3） */
+.rail { width: var(--rail-width); flex: none; background: var(--color-surface); border-right: 1px solid var(--color-border); display: flex; flex-direction: column; align-items: center; padding: var(--space-2) 0; gap: var(--space-1); }
+.rail__sep { width: 24px; height: 1px; background: var(--color-border-strong); margin: var(--space-2) 0; }
+.rail__spacer { flex: 1; }
+.rail-btn { width: 40px; padding: 4px 0 2px; display: flex; flex-direction: column; align-items: center; gap: 1px; border: 0; border-radius: var(--radius-s); background: none; cursor: pointer; color: var(--color-text-sub); position: relative; }
+.rail-btn i { font-size: 16px; }
+.rail-btn span { font-size: 10px; line-height: 1.2; }
+.rail-btn:hover { background: var(--color-primary-soft); color: var(--color-primary); }
+.rail-btn[aria-pressed="true"] { background: var(--color-primary-soft); color: var(--color-primary); box-shadow: inset 3px 0 0 var(--color-primary); }
+.rail-btn .badge { position: absolute; top: 0; right: 0; min-width: 16px; height: 16px; border-radius: 8px; background: var(--color-primary); color: var(--color-on-primary); font-size: 10px; display: flex; align-items: center; justify-content: center; }
+
+/* 脇のパネル */
+.panel { width: var(--panel-width); flex: none; border-right: 1px solid var(--color-border); background: var(--color-bg); display: flex; flex-direction: column; min-height: 0; }
+.panel--right { border-right: 0; border-left: 1px solid var(--color-border); }
+.panel__head { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--color-border); font-weight: 700; }
+.panel__body { flex: 1; min-height: 0; overflow: auto; padding: var(--space-3); display: flex; flex-direction: column; gap: var(--space-4); }
+.group { display: flex; flex-direction: column; gap: var(--space-2); }
+.group + .group { padding-top: var(--space-3); border-top: 1px solid var(--color-border); }
+.group__title { font-size: var(--font-size-small); font-weight: 700; color: var(--color-text-sub); display: flex; align-items: center; gap: var(--space-1); }
+.row { display: flex; gap: var(--space-2); align-items: flex-end; }
+.row > .field { flex: 1; min-width: 0; }
+
+/* 表（§1-10 §1-15：見出し固定・選択行は色＋マーク） */
+.grid-wrap { flex: 1; min-height: 0; overflow: auto; position: relative; background: var(--color-bg); }
+table.grid { border-collapse: separate; border-spacing: 0; table-layout: fixed; width: max-content; min-width: 100%; }
+.grid th, .grid td { padding: var(--table-cell-padding-y) var(--table-cell-padding-x); border-bottom: 1px solid var(--color-border); border-right: 1px solid var(--color-gray-100); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }
+.grid thead th { position: sticky; top: 0; z-index: 2; background: var(--color-surface-2); font-weight: 600; cursor: pointer; user-select: none; border-bottom: 2px solid var(--color-border-strong); }
+.grid thead th:hover { background: var(--color-primary-soft); }
+.grid th .sort { color: var(--color-primary); margin-left: 4px; font-size: .85em; }
+.grid td.num, .grid th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.grid .col-check { width: 40px; text-align: center; padding-left: 0; padding-right: 0; position: sticky; left: 0; z-index: 1; background: inherit; }
+.grid thead .col-check { z-index: 3; }
+.grid tbody tr { background: var(--color-bg); cursor: pointer; }
+.grid tbody tr:hover { background: var(--color-hover-row); }
+.grid tbody tr.is-selected { background: var(--color-select-row); }
+.grid tbody tr.is-selected td:first-child { box-shadow: inset 4px 0 0 var(--color-primary); }
+.grid tbody tr:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
+.grid td.is-missing { background: var(--color-error-soft); color: var(--color-error); }
+.grid td.is-used { background: var(--color-primary-faint); }
+.grid tr.is-selected td.is-used { background: transparent; }
+.grid tr.group-head td { background: var(--color-surface); font-weight: 600; color: var(--color-text-sub); }
+.grid input[type="checkbox"], .check { width: 16px; height: 16px; accent-color: var(--color-primary); cursor: pointer; }
+.hl { background: var(--color-warn-soft); border-radius: 2px; }
+
+/* 状態の領域（0件・失敗など §1-17） */
+.state { padding: var(--space-6) var(--space-4); text-align: center; color: var(--color-text-sub); display: flex; flex-direction: column; align-items: center; gap: var(--space-2); }
+.state i { font-size: 28px; color: var(--color-border-strong); }
+.state--error i { color: var(--color-error); }
+.state strong { color: var(--color-text); }
+
+/* ステータスバー（出どころ・件数 §1-6 §1-12） */
+.statusbar { flex: none; height: 30px; display: flex; align-items: center; gap: var(--space-3); padding: 0 var(--space-3); border-top: 1px solid var(--color-border); background: var(--color-surface); font-size: var(--font-size-small); color: var(--color-text-sub); }
+.statusbar b { color: var(--color-text); }
+.statusbar .spacer { flex: 1; }
+.pager { display: inline-flex; align-items: center; gap: var(--space-1); }
+.pager .btn { height: 22px; min-width: 22px; padding: 0 6px; }
+
+/* モーダル（開いたまま他へ移れる前提：背景を暗くしすぎない §3） */
+.modal-back { position: fixed; inset: 0; background: rgb(23 50 79 / 28%); z-index: 50; display: flex; align-items: center; justify-content: center; }
+.modal { background: var(--color-bg); border-radius: var(--radius-l); box-shadow: var(--shadow-m); display: flex; flex-direction: column; max-height: 94dvh; max-width: 96vw; }
+.modal__head { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--color-border); font-weight: 700; }
+.modal__body { flex: 1; min-height: 0; overflow: auto; }
+.modal__foot { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); border-top: 1px solid var(--color-border); }
+
+/* 通知（取り消し付き §1-5 §7） */
+.toasts { position: fixed; left: 50%; bottom: 104px; transform: translateX(-50%); display: flex; flex-direction: column; gap: var(--space-2); z-index: 80; align-items: center; }
+.toast { background: var(--c-blue-900); color: var(--c-white); padding: var(--space-2) var(--space-4); border-radius: var(--radius-m); box-shadow: var(--shadow-m); display: flex; gap: var(--space-3); align-items: center; animation: toast-in var(--motion-base) ease-out; }
+.toast button { background: none; border: 0; color: var(--c-blue-200); cursor: pointer; text-decoration: underline; }
+@keyframes toast-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* 帳票カード（② 帳票 = 青緑） */
+.form-card { display: flex; gap: var(--space-3); align-items: flex-start; padding: var(--space-3); border: 1px solid var(--color-border-strong); border-radius: var(--radius-m); background: var(--color-bg); cursor: pointer; text-align: left; width: 100%; }
+.form-card:hover { border-color: var(--color-step2); background: var(--color-step2-soft); }
+.form-card[aria-checked="true"] { border-color: var(--color-step2); background: var(--color-step2-soft); box-shadow: inset 4px 0 0 var(--color-step2); }
+.form-card__icon { width: 36px; height: 36px; border-radius: var(--radius-m); background: var(--color-step2-soft); color: var(--color-step2); display: flex; align-items: center; justify-content: center; flex: none; }
+.form-card__name { font-weight: 700; }
+.form-card__desc { font-size: var(--font-size-small); color: var(--color-text-sub); }
+.form-card__meta { margin-top: var(--space-1); display: flex; gap: var(--space-1); flex-wrap: wrap; }
+
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }

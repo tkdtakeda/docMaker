@@ -1,0 +1,172 @@
+/* css/block.css : ブロックで作る帳票の編集画面（用紙・帯・区画・表・選択・ドラッグ） */
+.bk-wrap { position: relative; width: max-content; margin: 0 auto; padding: 12px 12px 24px 92px; }
+.bk-paper { position: relative; background: #fff; box-shadow: 0 1px 6px rgba(0, 0, 0, .3); border: 1px solid var(--c-border); }
+.bk-printbox { position: absolute; border: 1px dashed #b9c6d6; pointer-events: none; z-index: 0; }
+.bk-sec { position: relative; z-index: 1; }
+.bk-sec-header, .bk-sec-footer { background: #f6f9fc; border: 1px dashed var(--c-border); border-radius: var(--r-sm); margin: 2px 0 6px; padding: 0 4px; }
+.bk-sec-cap { font-size: 10.5px; color: var(--c-text-muted, #6b7c8f); padding: 2px 2px 0; }
+.bk-add-first { margin: 4px 0; }
+.bk-ins { display: block; width: 100%; height: 0; overflow: visible; padding: 0; border: 0; background: transparent; cursor: pointer; position: relative; opacity: 0; transition: opacity .12s; }
+.bk-ins::after { content: ""; position: absolute; left: 0; right: 0; top: -6px; height: 12px; z-index: 5; }
+.bk-ins:hover, .bk-ins:focus-visible { opacity: 1; z-index: 5; }
+.bk-gapmark { position: absolute; left: 0; right: 0; top: 100%; padding: 0; border: 0; cursor: pointer; background: repeating-linear-gradient(135deg, rgba(58, 115, 173, .22) 0 2px, transparent 2px 5px); opacity: .5; }
+.bk-gapmark:hover { opacity: 1; }
+.bk-gapmark span { display: none; position: absolute; right: 0; top: 100%; background: var(--c-primary-600); color: #fff; font-size: 10px; line-height: 1.5; padding: 0 6px; border-radius: 0 0 3px 3px; white-space: nowrap; z-index: 6; }
+.bk-gapmark:hover span { display: block; }
+.bk-ins::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; border-top: 2px solid var(--c-primary-500); }
+.bk-ins span { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); background: var(--c-primary-600); color: #fff; font-size: 11px; line-height: 1.5; padding: 0 12px; border-radius: 12px; white-space: nowrap; }
+.bk-band { position: relative; border-radius: 3px; }
+.bk-band.is-sel { outline: 2px solid var(--c-primary-500); outline-offset: 4px; background: rgba(58, 115, 173, .05); }
+.bk-bl { position: absolute; left: -84px; top: 0; width: 76px; text-align: right; border: 0; background: transparent; cursor: pointer; font-size: 10.5px; line-height: 1.3; color: var(--c-text-muted, #6b7c8f); padding: 2px 4px; border-radius: 4px; }
+.bk-bl b { display: block; color: var(--c-primary-700); font-size: 11px; }
+.bk-bl:hover { background: var(--c-primary-50); }
+.bk-band.is-sel > .bk-bl { background: var(--c-primary-600); color: #fff; }
+.bk-band.is-sel > .bk-bl b { color: #fff; }
+.bk-zones { display: flex; position: relative; }
+.bk-zone { flex: none; min-width: 0; position: relative; }
+.bk-grip { position: relative; flex: none; width: 0; align-self: stretch; z-index: 3; cursor: col-resize; }
+.bk-grip::before { content: ""; position: absolute; left: 50%; margin-left: -6px; width: 12px; top: 0; bottom: 0; }
+.bk-grip::after { content: ""; position: absolute; left: 50%; margin-left: -2px; top: 4px; width: 4px; height: 28px; border-radius: 2px; background: var(--c-primary-500); opacity: 0; transition: opacity .12s; }
+.bk-band:hover .bk-grip::after { opacity: .55; }
+.bk-blk { position: relative; border: 1px dashed transparent; }
+.bk-blk:hover { border-color: var(--c-primary-300, #9bbbe0); }
+.bk-blk.is-cur { border-color: var(--c-primary-400, #6f9bcf); }
+.bk-blk.is-sel { outline: 2px solid var(--c-accent-600, #e08a1e); outline-offset: 1px; }
+.bk-tag { position: absolute; top: -18px; left: -1px; z-index: 4; border: 0; background: var(--c-primary-600); color: #fff; font-size: 10px; line-height: 1.6; padding: 0 6px; border-radius: 3px 3px 0 0; cursor: pointer; white-space: nowrap; opacity: 0; transition: opacity .1s; }
+.bk-blk:hover > .bk-tag, .bk-blk.is-cur > .bk-tag { opacity: 1; }
+.bk-blk.is-sel > .bk-tag { background: var(--c-accent-600, #e08a1e); }
+table.bk-t { border-collapse: collapse; table-layout: fixed; background: #fff; }
+table.bk-t td { padding: 2px 5px; font-size: 11pt; font-family: 'Yu Gothic', 'Meiryo', sans-serif; overflow: hidden; position: relative; border: 1px solid #e3e9f0; height: 100%; text-overflow: clip; }
+.bk-var { color: var(--c-primary-700); background: rgba(58, 115, 173, .09); border-radius: 3px; padding: 0 1px; }
+.bk-formula { color: var(--c-primary-700); font-style: italic; }
+table.bk-t td.bk-sel { background-image: linear-gradient(rgba(58, 115, 173, .16), rgba(58, 115, 173, .16)); }
+table.bk-t td.bk-sa { background-image: none; outline: 2px solid var(--c-primary-600); outline-offset: -2px; z-index: 2; }
+table.bk-t td.bk-sel.bk-st { box-shadow: inset 0 2px 0 var(--c-primary-500); }
+table.bk-t td.bk-sel.bk-sb { box-shadow: inset 0 -2px 0 var(--c-primary-500); }
+table.bk-t td.bk-sel.bk-sl { box-shadow: inset 2px 0 0 var(--c-primary-500); }
+table.bk-t td.bk-sel.bk-sr { box-shadow: inset -2px 0 0 var(--c-primary-500); }
+table.bk-t td.is-repcell { box-shadow: inset 0 0 0 1px rgba(46, 139, 87, .55); }
+.bk-rep { position: absolute; left: -64px; z-index: 5; font-size: 10px; line-height: 1.6; color: #fff; background: #2e8b57; padding: 0 5px; border-radius: 3px; pointer-events: none; }
+.rp-scroll:focus { outline: none; }
+.rp-scroll:focus-visible { outline: 2px solid var(--c-primary-400, #6f9bcf); outline-offset: -2px; }
+table.bk-t td.is-editing { overflow: visible; z-index: 6; }
+.bk-edit { position: absolute; left: -2px; top: -2px; min-width: calc(100% + 4px); width: max(calc(100% + 4px), 280px); max-width: 480px; word-break: break-all; line-height: 1.4; overflow: hidden; padding: 2px 5px; font: inherit; border: 2px solid var(--c-primary-600); background: #fff; color: var(--c-text); resize: none; box-sizing: border-box; z-index: 7; box-shadow: 0 2px 8px rgba(0, 0, 0, .25); }
+.bk-empty { border: 2px dashed var(--c-border); border-radius: 6px; padding: 10px; display: flex; flex-direction: column; gap: 6px; align-items: center; min-height: 56px; }
+.bk-pop { position: absolute; z-index: 40; }
+.bk-mark { display: inline-block; min-width: 3.2em; color: var(--c-primary-600); letter-spacing: -1px; }
+.bk-tip { position: absolute; z-index: 60; background: #1f2d3d; color: #fff; font-size: 11px; padding: 2px 9px; border-radius: 4px; pointer-events: none; white-space: nowrap; }
+.bk-formula-bar { font-family: ui-monospace, Consolas, monospace; font-size: 12px; width: 100%; resize: vertical; }
+.bk-legacy { padding: var(--sp-4); max-width: 520px; margin: var(--sp-6) auto; }
+
+/* 狭い画面：セルの操作バーは文字のラベルを畳み（ツールチップは残る）、用紙の縦を広く使う */
+.rp-sheetbar .rp-num { min-width: 64px; }
+@media (max-width: 1500px) { .rp-fmt-row.is-cell .rp-fmt:not(.rp-keep) .rp-fmt-text { display: none; } }
+/* ブロックの帳票の出力イメージ：値のセルを緑で塗らない（用紙の見た目のまま見せる。エラーの赤だけ残す） */
+.rp-sheet.is-output.is-plain td.rp-val:not(.rp-err) { background-color: transparent; }
+/* 点線の補助線（セルの内側に重ねて描く）は、実際の罫線を隠して「線が薄い・消えた」ように見せるので、用紙の見た目のときは出さない */
+.rp-sheet.is-output.is-plain td { outline: none; }
+
+/* 段落（インデント・余白）の基準の余白、画像 */
+table.bk-t { --cpad: 5px; }
+.rp-sheet td.rp-imgcell { position: relative; padding: 0; }
+.rp-img { position: absolute; left: 0; top: 0; width: 100%; height: 100%; object-fit: fill; display: block; }
+.bk-imgblk img { display: block; max-width: 100%; height: auto; pointer-events: none; user-select: none; }
+.bk-imgblk { padding: 0; }
+.bk-drop { outline: 3px dashed var(--c-primary-500); outline-offset: -3px; background: rgba(58, 115, 173, .08); }
+
+/* 自由に置く物（テキストボックス・図形・表・画像）：用紙の上に重ねる層 */
+.bk-float { position: absolute; box-sizing: border-box; outline: 1px dashed rgba(58, 115, 173, .45); outline-offset: 1px; }
+.bk-float:hover { outline-color: var(--c-primary-500); }
+.bk-float.is-cur { outline: 1px solid var(--c-primary-500); }
+.bk-float.is-sel { outline: 2px solid var(--c-accent-600, #e08a1e); outline-offset: 1px; }
+.bk-fbody { cursor: move; display: block; user-select: none; }
+.bk-fblk { border: 0; }
+.bk-fblk > table.bk-t { --cpad: 4px; }
+.bk-float .bk-ftag { position: absolute; left: -1px; top: -19px; z-index: 6; border: 0; background: var(--c-primary-600); color: #fff; font-size: 10px; line-height: 1.6; padding: 0 6px; border-radius: 3px 3px 0 0; cursor: move; white-space: nowrap; opacity: 0; transition: opacity .1s; }
+.bk-float:hover > .bk-ftag, .bk-float.is-cur > .bk-ftag { opacity: 1; }
+.bk-float.is-sel > .bk-ftag { background: var(--c-accent-600, #e08a1e); }
+.bk-fedge { position: absolute; z-index: 5; cursor: move; }
+.bk-fedge-n { left: 0; right: 0; top: -4px; height: 8px; }
+.bk-fedge-s { left: 0; right: 0; bottom: -4px; height: 8px; }
+.bk-fedge-w { top: 0; bottom: 0; left: -4px; width: 8px; }
+.bk-fedge-e { top: 0; bottom: 0; right: -4px; width: 8px; }
+.bk-fh { position: absolute; z-index: 8; width: 10px; height: 10px; margin: -5px 0 0 -5px; background: #fff; border: 2px solid var(--c-accent-600, #e08a1e); border-radius: 2px; box-sizing: border-box; }
+.bk-fh[data-h="nw"], .bk-fh[data-h="se"] { cursor: nwse-resize; }
+.bk-fh[data-h="ne"], .bk-fh[data-h="sw"] { cursor: nesw-resize; }
+.bk-fh[data-h="n"], .bk-fh[data-h="s"] { cursor: ns-resize; }
+.bk-fh[data-h="e"], .bk-fh[data-h="w"] { cursor: ew-resize; }
+.bk-guide { position: absolute; z-index: 30; pointer-events: none; }
+.rp-floats { pointer-events: none; }
+
+/* 「高さを合わせる」の区画：表を帯の高さまで伸ばす（行は比例して伸びる） */
+.bk-zone.is-stretch > .bk-blk { height: 100%; }
+.bk-zone.is-stretch > .bk-blk > table.bk-t { height: 100%; }
+
+/* 改ページの線 */
+.bk-break { display: flex; align-items: center; gap: 6px; margin: 4px 0; color: #b0452a; font-size: 11px; border-top: 2px dashed #d98c7a; padding-top: 2px; }
+
+/* 表の行数・列数の選択 */
+.bk-pick { padding: 8px 10px; }
+.bk-pick-grid { display: grid; gap: 2px; margin: 4px 0; }
+.bk-pick-cell { width: 18px; height: 18px; border: 1px solid var(--c-border-strong, #b9c6d6); border-radius: 2px; background: #fff; cursor: pointer; }
+.bk-pick-cell.is-on { background: var(--c-primary-100, #d6e4f3); border-color: var(--c-primary-500); }
+.bk-pick-info { font-size: 12px; font-weight: bold; color: var(--c-primary-700); margin-bottom: 4px; }
+
+/* 操作バーの高さは、選んだものに合わせて変わる（余白を作らない）。用紙がずれないよう、変わった分は js（report.js）がスクロールで補正する */
+.rp-sheetbar .bk-hint-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+/* 選んだセルの下の案内・入力中の表示 */
+.bk-cellhint { position: absolute; z-index: 25; background: #1f2d3d; color: #fff; font-size: 11px; line-height: 1.5; padding: 1px 8px; border-radius: 4px; pointer-events: none; white-space: nowrap; box-shadow: 0 1px 4px rgba(0, 0, 0, .25); }
+.bk-cellhint.is-editing { background: var(--c-accent-600, #e08a1e); }
+
+/* 操作バーを詰める（行の高さ・すき間・まわりの余白を小さく。上の「配置」の段との間も狭く） */
+.rp-center { gap: 4px; }
+.rp-sheetbar { padding: 2px 6px; gap: 2px; }
+.rp-sheetbar .rp-fmt-row { gap: 4px; }
+.rp-sheetbar .icon-btn.rp-fmt, .rp-sheetbar .rp-fmt { height: 26px; min-height: 26px; }
+.rp-sheetbar .select, .rp-sheetbar .input, .rp-sheetbar select { height: 26px; min-height: 26px; padding-top: 0; padding-bottom: 0; }
+.rp-sheetbar .rp-fmt-addr { padding: 0 var(--sp-2); line-height: 24px; }
+.rp-sheetbar .rp-fmt-sep { height: 18px; }
+.rp-toolbar { gap: var(--sp-2); }
+
+/* 右の空き（区画を足すかどうかはユーザーが決める。ふだんは目立たせない） */
+.bk-free { flex: none; display: flex; align-items: flex-start; justify-content: flex-start; opacity: 0; transition: opacity .12s; }
+.bk-band:hover .bk-free, .bk-band.is-sel .bk-free { opacity: 1; }
+
+/* 変数の書式（桁など）：3 つずつ並べて、縦に長くならないように */
+.bk-vprops { display: flex; flex-direction: column; gap: 4px; margin: 4px 0; }
+.bk-vrow { border: 1px solid var(--c-border); border-radius: var(--r-sm); padding: 4px 6px; display: flex; flex-direction: column; gap: 2px; background: var(--c-surface-2, #f6f9fc); }
+.bk-vrow > .row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; align-items: end; }
+.bk-vrow .rp-cell-field { display: flex; flex-direction: column; align-items: stretch; gap: 0; font-size: 11px; }
+.bk-vrow .rp-short, .bk-vrow input.input { width: 100%; min-width: 0; }
+.bk-vrow .rp-cell-field select { min-width: 0; width: 100%; }
+.bk-vrow .bk-checks { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; margin-top: 2px; }
+.bk-vrow .bk-checks .check { white-space: nowrap; }
+
+/* 入力中の候補 */
+.bk-suggest { position: absolute; z-index: 70; min-width: 280px; max-width: 460px; max-height: 280px; overflow-y: auto; background: #fff; border: 1px solid var(--c-primary-400, #6f9bcf); border-radius: 6px; box-shadow: 0 4px 14px rgba(0, 0, 0, .25); font-size: 12px; }
+.bk-sug-item { display: flex; gap: 10px; align-items: baseline; padding: 3px 10px; cursor: pointer; }
+.bk-sug-item b { flex: none; color: var(--c-primary-700); min-width: 6em; }
+.bk-sug-item .muted { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bk-sug-item.is-on, .bk-sug-item:hover { background: var(--c-primary-50, #eaf1f8); }
+.bk-sug-help { padding: 3px 10px; border-top: 1px solid var(--c-border); background: #f6f9fc; color: var(--c-text-muted, #5a6b7d); position: sticky; bottom: 0; }
+
+/* 見出しのバッジ兼用の選択欄（板の表の行のまとめ方） */
+.select.bk-bybadge { width: auto; min-width: 0; padding: 2px 22px 2px 10px; border-radius: 999px; background-color: var(--c-accent-100); color: var(--c-accent-600); border-color: transparent; font-size: var(--fs-sm); font-weight: 600; cursor: pointer; }
+.select.bk-bybadge:hover { filter: brightness(0.97); }
+
+.bk-vrow .bk-more { margin-top: 4px; font-size: 11px; }
+.bk-vrow .bk-more > summary { cursor: pointer; color: var(--c-text-sub); padding: 2px 0; }
+.bk-vrow .bk-more[open] > summary { margin-bottom: 4px; }
+.bk-vrow .bk-more .row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; }
+.bk-vrow .bk-more .rp-cell-field { flex-direction: column; align-items: stretch; margin: 0; }
+.bk-vrow .bk-more .rp-cell-field > span { width: auto; }
+
+/* 変数の書式の欄：入力欄と選択欄の高さをそろえる */
+.bk-vrow input.input, .bk-vrow select.select, .bk-vrow .rp-cell-field select { height: 32px; min-height: 32px; box-sizing: border-box; padding-top: 0; padding-bottom: 0; }
+/* 板番号のヒント（特別な機能なので、書式の欄と見分けられるように） */
+.bk-hint { display: flex; align-items: center; gap: 8px; padding: 8px 10px; margin: 4px 0; border-radius: var(--r-sm); background: var(--c-accent-100); border-left: 3px solid var(--c-accent-600); }
+.bk-hint .bk-hint-ic { color: var(--c-accent-600); }
+.bk-hint .muted { font-size: 11px; }
+.bk-hint .bk-special { display: inline-block; margin-right: 6px; padding: 1px 8px; border-radius: 999px; background: var(--c-accent-600); color: #fff; font-size: 11px; font-weight: 700; vertical-align: 1px; }
+.bk-hint b { font-size: var(--fs-sm); }
+.bk-hint.is-on { border-left-color: var(--c-primary-600); background: var(--c-primary-50, var(--c-accent-100)); }

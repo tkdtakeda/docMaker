@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>案A 手順切替型 | docMaker</title>
+<link rel="stylesheet" href="../css/tokens.css">
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/parts.css">
+<link rel="stylesheet" href="../css/sheet.css">
+<link rel="stylesheet" href="../css/layout-a.css">
+</head>
+<body>
+<!-- 案A：手順を 1 画面ずつ切り替える（作業の流れの理解を最優先）。
+     仮説：いま必要なものだけを大きく出せば、迷いが最小になる。 -->
+<div class="app">
+  <header class="topbar">
+    <span class="topbar__title"><i class="fa-solid fa-file-pen"></i>docMaker</span>
+    <ol class="steps" id="steps"></ol>
+    <span class="topbar__spacer"></span>
+    <span class="note" id="hint"></span>
+    <button class="btn" id="back" hidden><i class="fa-solid fa-arrow-left"></i>戻る</button>
+    <button class="btn btn--primary" id="cta"></button>
+  </header>
+  <div class="app__body">
+    <nav class="rail" id="rail" aria-label="機能"></nav>
+    <aside class="panel hidden" id="panel"></aside>
+    <main class="main">
+      <section class="view" id="v-pick">
+        <div class="toolbar"><div class="searchbox"><i class="fa-solid fa-magnifying-glass"></i><input class="input" id="search" type="search" placeholder="ロット番号・品名・顧客など、どの項目でも検索" aria-label="検索"></div></div>
+        <div class="chips hidden" id="chips"></div>
+        <div class="grid-wrap" id="grid"></div>
+        <div class="statusbar" id="status"></div>
+      </section>
+      <section class="view hidden" id="v-form">
+        <div class="form-view"><h2><i class="fa-solid fa-file-lines"></i> 帳票の形式を選んでください</h2>
+          <p class="note" id="sel-sum"></p>
+          <div class="form-view__cards" id="cards"></div></div>
+      </section>
+      <section class="view hidden" id="v-prev"><div class="preview" id="prev-host"></div></section>
+    </main>
+  </div>
+</div>
+<script src="../js/core.js"></script>
+<script src="../js/sample-data.js"></script>
+<script src="../js/forms.js"></script>
+<script src="../js/query.js"></script>
+<script src="../js/grid.js"></script>
+<script src="../js/filter-panel.js"></script>
+<script src="../js/panels.js"></script>
+<script src="../js/preview.js"></script>
+<script src="../js/rail.js"></script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  let view = "pick";
+  const show = (v) => {
+    view = v;
+    ["pick", "form", "prev"].forEach((k) => $("v-" + k).classList.toggle("hidden", k !== v));
+    $("back").hidden = v === "pick";
+    if (v === "prev") DM.mountPreview($("prev-host"), { focusPrint: true });
+    if (v === "form") $("sel-sum").innerHTML = `<i class="fa-solid fa-circle-info"></i> ${DM.store.selected.size} 件のロットを選択中です。各帳票の右下に、必須項目の不足が出ます。`;
+    draw();
+  };
+  DM.grid = new DM.Grid($("grid"), { statusEl: $("status"), onEnter: () => go() });
+  DM.mountFormChooser($("cards"), { onChoose: () => draw() });
+  DM.mountSteps($("steps"));
+  DM.mountRail({ rail: $("rail"), panel: $("panel"), items: [
+    { id: "filter", icon: "fa-filter", label: "条件", title: "絞り込み条件", mount: DM.mountFilterPanel, badge: () => DM.queryState.filters.length },
+    { id: "data", icon: "fa-database", label: "データ", sepBefore: true, spacer: true, mount: DM.mountDataPanel },
+    { id: "view", icon: "fa-sliders", label: "表示", mount: DM.mountViewPanel }] });
+  const go = () => { const a = DM.nextAction(); if (view === "pick" && a.key === "form") show("form"); else if (a.key === "preview") show("prev"); };
+  const cta = DM.mountCta($("cta"), $("hint"), {
+    load: () => document.querySelector('.rail-btn[data-id="data"]').click(),
+    form: () => show("form"),
+    preview: () => show("prev"),
+  });
+  const draw = () => {                       // 画面ごとに CTA の行き先を揃える
+    const a = DM.nextAction();
+    if (view === "form" && a.key === "form") { $("cta").disabled = true; $("cta").title = "帳票形式を選ぶと進めます。"; $("hint").textContent = "帳票形式を選んでください。"; }
+    if (view === "prev") { $("cta").disabled = true; $("cta").innerHTML = "印刷は下のボタンから"; $("hint").textContent = ""; }
+  };
+  $("back").addEventListener("click", () => show(view === "prev" ? "form" : "pick"));
+  ["selection", "form"].forEach((n) => DM.bus.on(n, () => { if (view === "prev") DM.mountPreview($("prev-host")); draw(); }));
+  DM.boot({ search: $("search"), chips: $("chips") });
+})();
+</script>
+</body>
+</html>
